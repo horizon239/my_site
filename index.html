@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MY SITE</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+KR:wght@300;400&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0a0a;
+      --surface: #111113;
+      --border: rgba(255,255,255,0.07);
+      --text: #e8e4dc;
+      --muted: #555;
+      --accent: #c8a96e;
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Noto Sans KR', sans-serif;
+      font-weight: 300;
+      overflow: hidden;
+    }
+
+    /* 배경 노이즈 텍스처 */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        radial-gradient(ellipse 80% 60% at 50% 0%, rgba(200,169,110,0.06) 0%, transparent 60%),
+        radial-gradient(ellipse 40% 40% at 80% 80%, rgba(200,169,110,0.03) 0%, transparent 50%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* 가는 격자 */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(var(--border) 1px, transparent 1px),
+        linear-gradient(90deg, var(--border) 1px, transparent 1px);
+      background-size: 80px 80px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .wrap {
+      position: relative;
+      z-index: 1;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+      padding: 40px 24px;
+    }
+
+    /* 상단 라인 장식 */
+    .deco-line {
+      width: 1px;
+      height: 80px;
+      background: linear-gradient(to bottom, transparent, var(--accent));
+      margin-bottom: 40px;
+      opacity: 0;
+      animation: fadeDown 1s ease 0.2s forwards;
+    }
+
+    /* 로고 */
+    .logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(56px, 12vw, 110px);
+      letter-spacing: 0.18em;
+      color: var(--text);
+      line-height: 1;
+      opacity: 0;
+      animation: fadeUp 0.9s ease 0.5s forwards;
+    }
+
+    /* 로고 아래 얇은 선 */
+    .logo-bar {
+      width: 100%;
+      max-width: 420px;
+      height: 1px;
+      background: linear-gradient(to right, transparent, var(--accent), transparent);
+      margin: 20px 0 24px;
+      opacity: 0;
+      animation: fadeIn 0.8s ease 0.9s forwards;
+    }
+
+    /* 소개 문구 */
+    .tagline {
+      font-size: clamp(12px, 2vw, 14px);
+      color: var(--muted);
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      text-align: center;
+      line-height: 2;
+      opacity: 0;
+      animation: fadeUp 0.9s ease 1.1s forwards;
+    }
+
+    .tagline em {
+      font-style: normal;
+      color: var(--accent);
+    }
+
+    /* 하단 장식 */
+    .deco-bottom {
+      position: fixed;
+      bottom: 32px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      opacity: 0;
+      animation: fadeIn 1s ease 1.6s forwards;
+    }
+    .deco-bottom span {
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      color: #333;
+      text-transform: uppercase;
+    }
+    .deco-bottom::before,
+    .deco-bottom::after {
+      content: '';
+      width: 40px;
+      height: 1px;
+      background: #2a2a2a;
+    }
+
+    /* 모서리 장식 */
+    .corner {
+      position: fixed;
+      width: 24px;
+      height: 24px;
+      opacity: 0;
+      animation: fadeIn 0.8s ease 1.4s forwards;
+    }
+    .corner.tl { top: 24px; left: 24px; border-top: 1px solid var(--border); border-left: 1px solid var(--border); }
+    .corner.tr { top: 24px; right: 24px; border-top: 1px solid var(--border); border-right: 1px solid var(--border); }
+    .corner.bl { bottom: 24px; left: 24px; border-bottom: 1px solid var(--border); border-left: 1px solid var(--border); }
+    .corner.br { bottom: 24px; right: 24px; border-bottom: 1px solid var(--border); border-right: 1px solid var(--border); }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeDown {
+      from { opacity: 0; transform: translateY(-10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="corner tl"></div>
+  <div class="corner tr"></div>
+  <div class="corner bl"></div>
+  <div class="corner br"></div>
+
+  <div class="wrap">
+    <div class="deco-line"></div>
+
+    <!-- ★ 사이트 이름을 여기에 입력하세요 ★ -->
+    <div class="logo">MY SITE</div>
+
+    <div class="logo-bar"></div>
+
+    <!-- ★ 소개 문구를 여기에 입력하세요 ★ -->
+    <p class="tagline">
+      Coming <em>Soon</em><br>
+      무언가 멋진 것이 준비 중입니다
+    </p>
+  </div>
+
+  <div class="deco-bottom">
+    <span>2025</span>
+  </div>
+
+</body>
+</html>
