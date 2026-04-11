@@ -279,7 +279,7 @@
             {showMin && <span style={{ color: MC, fontWeight: 700 }}>● {tx("minH", lang)}</span>}
           </div>
           {digital && <div style={{ background: "#1e272e", borderRadius: 16, padding: "12px 28px", fontFamily: "'Bagel Fat One', cursive", fontSize: 34, color: "#7bed9f", letterSpacing: 4, boxShadow: "inset 0 2px 8px rgba(0,0,0,0.5)", border: "3px solid #3d3027" }}>
-            {String(hour).padStart(2, "0")} : {String(minute).padStart(2, "0")}
+            {hour} : {String(minute).padStart(2, "0")}
           </div>}
         </div>
       );
@@ -338,7 +338,7 @@
     ];
 
     function QuizMode({ lang, onHome }) {
-      const clockSize = useClockSize(0.88);
+      const clockSize = useClockSize(0.95);
       const [lv, setLv] = useState(0);
       const [mode, setMode] = useState(null);
       const [q, setQ] = useState(null);
@@ -424,19 +424,19 @@
 
       if (mode === "read") return (
         <div style={{ textAlign: "center", padding: "0 12px" }}>
-          <div style={{ display: "flex", justifyContent: "center", gap: 12, marginBottom: 12 }}>
+          <div style={{ display: "flex", justifyContent: "center", gap: 12, marginBottom: 8 }}>
             <Badge l={tx("score", lang)} v={sc} c="#FECA57" />
             <Badge l={tx("qNum", lang)} v={(rd + 1) + "/" + total} c="#48DBFB" />
           </div>
-          <p style={{ fontSize: 22, fontFamily: "'Gaegu', cursive", fontWeight: 700, color: "#3d3027", marginBottom: 10 }}>{tx("whatTime", lang)} 🤔</p>
+          <p style={{ fontSize: 20, fontFamily: "'Gaegu', cursive", fontWeight: 700, color: "#3d3027", margin: "0 0 6px" }}>{tx("whatTime", lang)} 🤔</p>
           <Clock hour={q.h} minute={q.m} size={clockSize} showMin digital={false} fiveL lang={lang} />
-          {fb !== null && <div style={{ fontSize: 28, margin: "12px 0" }}>{fb ? ("🎉 " + tx("correct", lang)) : ("😅 " + fmtTime(q.h, q.m, lang))}</div>}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8, maxWidth: 400, margin: "12px auto 0" }}>
+          {fb !== null && <div style={{ fontSize: 22, margin: "6px 0" }}>{fb ? ("🎉 " + tx("correct", lang)) : ("😅 " + fmtTime(q.h, q.m, lang))}</div>}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8, margin: "8px auto 0" }}>
             {opts.map((op, i) => {
               const cor = fmtTime(q.h, q.m, lang);
               const isC = fb !== null && op === cor;
               const isW = fb !== null && op === sel && !fb;
-              return <button key={i} onClick={() => doRead(op)} style={{ padding: "14px 6px", fontSize: 17, fontWeight: 700, border: isC ? "3px solid " + SC : isW ? "3px solid #e17055" : "3px solid #f0ebe3", borderRadius: 14, cursor: fb !== null ? "default" : "pointer", background: isC ? SC + "20" : isW ? "#ffeaeb" : "#fff", color: "#3d3027", boxShadow: "0 3px 10px rgba(0,0,0,0.06)" }}>{op}</button>;
+              return <button key={i} onClick={() => doRead(op)} style={{ padding: "12px 4px", fontSize: 15, fontWeight: 700, border: isC ? "3px solid " + SC : isW ? "3px solid #e17055" : "3px solid #f0ebe3", borderRadius: 14, cursor: fb !== null ? "default" : "pointer", background: isC ? SC + "20" : isW ? "#ffeaeb" : "#fff", color: "#3d3027", boxShadow: "0 2px 8px rgba(0,0,0,0.05)" }}>{op}</button>;
             })}
           </div>
         </div>
@@ -444,25 +444,25 @@
 
       return (
         <div style={{ textAlign: "center", padding: "0 12px" }}>
-          <div style={{ display: "flex", justifyContent: "center", gap: 12, marginBottom: 10 }}>
+          <div style={{ display: "flex", justifyContent: "center", gap: 12, marginBottom: 8 }}>
             <Badge l={tx("score", lang)} v={sc} c="#FECA57" />
             <Badge l={tx("qNum", lang)} v={(rd + 1) + "/" + total} c="#48DBFB" />
           </div>
-          <div style={{ background: "#1e272e", borderRadius: 16, padding: "10px 24px", display: "inline-block", marginBottom: 10, border: "3px solid #3d3027" }}>
+          <div style={{ background: "#1e272e", borderRadius: 14, padding: "10px 24px", display: "inline-block", marginBottom: 8, border: "3px solid #3d3027" }}>
             <span style={{ fontFamily: "'Bagel Fat One', cursive", fontSize: 28, color: "#7bed9f", letterSpacing: 3 }}>{fmtTime(q.h, q.m, lang)}</span>
           </div>
-          <p style={{ fontSize: 16, color: "#5a5049", marginBottom: 10 }}>{tx("setTime", lang)}</p>
+          <p style={{ fontSize: 16, color: "#5a5049", margin: "0 0 6px" }}>{tx("setTime", lang)}</p>
           <Clock hour={sH} minute={sM} size={clockSize} drag={!done} showMin onChange={(h, m) => { setSH(h); setSM(m); }} digital fiveL lang={lang} />
-          {fb !== null && <div style={{ fontSize: 28, margin: "12px 0" }}>{fb ? ("🎉 " + tx("correct", lang)) : ("😅 " + fmtTime(q.h, q.m, lang))}</div>}
-          {!done && <Btn bg={SC} c="#fff" onClick={doSet} style={{ marginTop: 12 }}>✅ {tx("submit", lang)}</Btn>}
+          {fb !== null && <div style={{ fontSize: 22, margin: "6px 0" }}>{fb ? ("🎉 " + tx("correct", lang)) : ("😅 " + fmtTime(q.h, q.m, lang))}</div>}
+          {!done && <Btn bg={SC} c="#fff" onClick={doSet} style={{ marginTop: 8 }}>✅ {tx("submit", lang)}</Btn>}
         </div>
       );
     }
 
     function Badge({ l, v, c }) {
       return <div style={{ background: "#fff", borderRadius: 14, padding: "5px 16px", border: "2px solid " + c, boxShadow: "0 3px 12px " + c + "30" }}>
-        <div style={{ fontSize: 13, color: "#888" }}>{l}</div>
-        <div style={{ fontSize: 24, fontFamily: "'Gaegu', cursive", fontWeight: 700, color: "#3d3027" }}>{v}</div>
+        <div style={{ fontSize: 11, color: "#888" }}>{l}</div>
+        <div style={{ fontSize: 20, fontFamily: "'Gaegu', cursive", fontWeight: 700, color: "#3d3027" }}>{v}</div>
       </div>;
     }
 
@@ -498,9 +498,9 @@
           <LangPicker lang={lang} setLang={setLang} />
           <div style={{ maxWidth: 620, margin: "0 auto", padding: "16px 20px", position: "relative", zIndex: 1 }}>
             {scr !== "home" ? (
-              <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 14 }}>
-                <button onClick={() => setScr("home")} style={{ background: "rgba(255,255,255,0.8)", border: "2px solid #e0d6c8", borderRadius: 50, width: 42, height: 42, fontSize: 18, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 3px 10px rgba(0,0,0,0.06)", flexShrink: 0 }}>←</button>
-                <h1 style={{ fontFamily: "'Gaegu', cursive", fontSize: 26, color: "#3d3027", margin: 0 }}>🕰️ {tx(scr, lang)}</h1>
+              <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 10 }}>
+                <button onClick={() => setScr("home")} style={{ background: "rgba(255,255,255,0.8)", border: "2px solid #e0d6c8", borderRadius: 50, width: 40, height: 40, fontSize: 18, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 3px 10px rgba(0,0,0,0.06)", flexShrink: 0 }}>←</button>
+                <h1 style={{ fontFamily: "'Gaegu', cursive", fontSize: 24, color: "#3d3027", margin: 0 }}>🕰️ {tx(scr, lang)}</h1>
               </div>
             ) : (
               <div style={{ textAlign: "center", marginBottom: 18 }}>
