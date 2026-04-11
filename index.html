@@ -124,13 +124,19 @@
     function aToH(a) { let h = Math.round((((a % 360) + 360) % 360) / 30) % 12; return h === 0 ? 12 : h; }
 
     function useClockSize(ratio) {
-      const [s, setS] = useState(() => Math.min(window.innerWidth - 32, 600) * (ratio || 0.92));
+      const calc = () => {
+        const w = Math.min(window.innerWidth - 32, 600);
+        const h = window.innerHeight;
+        const phoneMax = h < 750 ? h * 0.36 : h < 950 ? h * 0.4 : w;
+        return Math.round(Math.min(w * (ratio || 0.92), phoneMax));
+      };
+      const [s, setS] = useState(calc);
       useEffect(() => {
-        const h = () => setS(Math.min(window.innerWidth - 32, 600) * (ratio || 0.92));
-        window.addEventListener("resize", h);
-        return () => window.removeEventListener("resize", h);
+        const fn = () => setS(calc());
+        window.addEventListener("resize", fn);
+        return () => window.removeEventListener("resize", fn);
       }, [ratio]);
-      return Math.round(s);
+      return s;
     }
 
     function LangPicker({ lang, setLang }) {
@@ -417,35 +423,35 @@
       if (!q) return null;
 
       if (mode === "read") return (
-        <div style={{ textAlign: "center", padding: "0 16px" }}>
-          <div style={{ display: "flex", justifyContent: "center", gap: 16, marginBottom: 16 }}>
+        <div style={{ textAlign: "center", padding: "0 12px" }}>
+          <div style={{ display: "flex", justifyContent: "center", gap: 12, marginBottom: 12 }}>
             <Badge l={tx("score", lang)} v={sc} c="#FECA57" />
             <Badge l={tx("qNum", lang)} v={(rd + 1) + "/" + total} c="#48DBFB" />
           </div>
-          <p style={{ fontSize: 24, fontFamily: "'Gaegu', cursive", fontWeight: 700, color: "#3d3027", marginBottom: 12 }}>{tx("whatTime", lang)} 🤔</p>
+          <p style={{ fontSize: 22, fontFamily: "'Gaegu', cursive", fontWeight: 700, color: "#3d3027", marginBottom: 10 }}>{tx("whatTime", lang)} 🤔</p>
           <Clock hour={q.h} minute={q.m} size={clockSize} showMin digital={false} fiveL lang={lang} />
           {fb !== null && <div style={{ fontSize: 28, margin: "12px 0" }}>{fb ? ("🎉 " + tx("correct", lang)) : ("😅 " + fmtTime(q.h, q.m, lang))}</div>}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, maxWidth: 360, margin: "16px auto 0" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8, maxWidth: 400, margin: "12px auto 0" }}>
             {opts.map((op, i) => {
               const cor = fmtTime(q.h, q.m, lang);
               const isC = fb !== null && op === cor;
               const isW = fb !== null && op === sel && !fb;
-              return <button key={i} onClick={() => doRead(op)} style={{ padding: "18px 12px", fontSize: 20, fontWeight: 700, border: isC ? "3px solid " + SC : isW ? "3px solid #e17055" : "3px solid #f0ebe3", borderRadius: 18, cursor: fb !== null ? "default" : "pointer", background: isC ? SC + "20" : isW ? "#ffeaeb" : "#fff", color: "#3d3027", boxShadow: "0 3px 10px rgba(0,0,0,0.06)" }}>{op}</button>;
+              return <button key={i} onClick={() => doRead(op)} style={{ padding: "14px 6px", fontSize: 17, fontWeight: 700, border: isC ? "3px solid " + SC : isW ? "3px solid #e17055" : "3px solid #f0ebe3", borderRadius: 14, cursor: fb !== null ? "default" : "pointer", background: isC ? SC + "20" : isW ? "#ffeaeb" : "#fff", color: "#3d3027", boxShadow: "0 3px 10px rgba(0,0,0,0.06)" }}>{op}</button>;
             })}
           </div>
         </div>
       );
 
       return (
-        <div style={{ textAlign: "center", padding: "0 16px" }}>
-          <div style={{ display: "flex", justifyContent: "center", gap: 16, marginBottom: 16 }}>
+        <div style={{ textAlign: "center", padding: "0 12px" }}>
+          <div style={{ display: "flex", justifyContent: "center", gap: 12, marginBottom: 10 }}>
             <Badge l={tx("score", lang)} v={sc} c="#FECA57" />
             <Badge l={tx("qNum", lang)} v={(rd + 1) + "/" + total} c="#48DBFB" />
           </div>
-          <div style={{ background: "#1e272e", borderRadius: 16, padding: "14px 32px", display: "inline-block", marginBottom: 12, border: "3px solid #3d3027" }}>
-            <span style={{ fontFamily: "'Bagel Fat One', cursive", fontSize: 32, color: "#7bed9f", letterSpacing: 3 }}>{fmtTime(q.h, q.m, lang)}</span>
+          <div style={{ background: "#1e272e", borderRadius: 16, padding: "10px 24px", display: "inline-block", marginBottom: 10, border: "3px solid #3d3027" }}>
+            <span style={{ fontFamily: "'Bagel Fat One', cursive", fontSize: 28, color: "#7bed9f", letterSpacing: 3 }}>{fmtTime(q.h, q.m, lang)}</span>
           </div>
-          <p style={{ fontSize: 18, color: "#5a5049", marginBottom: 12 }}>{tx("setTime", lang)}</p>
+          <p style={{ fontSize: 16, color: "#5a5049", marginBottom: 10 }}>{tx("setTime", lang)}</p>
           <Clock hour={sH} minute={sM} size={clockSize} drag={!done} showMin onChange={(h, m) => { setSH(h); setSM(m); }} digital fiveL lang={lang} />
           {fb !== null && <div style={{ fontSize: 28, margin: "12px 0" }}>{fb ? ("🎉 " + tx("correct", lang)) : ("😅 " + fmtTime(q.h, q.m, lang))}</div>}
           {!done && <Btn bg={SC} c="#fff" onClick={doSet} style={{ marginTop: 12 }}>✅ {tx("submit", lang)}</Btn>}
@@ -454,7 +460,7 @@
     }
 
     function Badge({ l, v, c }) {
-      return <div style={{ background: "#fff", borderRadius: 16, padding: "8px 20px", border: "2px solid " + c, boxShadow: "0 3px 12px " + c + "30" }}>
+      return <div style={{ background: "#fff", borderRadius: 14, padding: "5px 16px", border: "2px solid " + c, boxShadow: "0 3px 12px " + c + "30" }}>
         <div style={{ fontSize: 13, color: "#888" }}>{l}</div>
         <div style={{ fontSize: 24, fontFamily: "'Gaegu', cursive", fontWeight: 700, color: "#3d3027" }}>{v}</div>
       </div>;
@@ -490,15 +496,19 @@
       return (
         <div style={{ minHeight: "100vh", background: "linear-gradient(170deg, #fef9ef 0%, #fdecd0 40%, #f8e8d6 100%)", position: "relative", userSelect: "none", WebkitUserSelect: "none", WebkitTouchCallout: "none" }}>
           <LangPicker lang={lang} setLang={setLang} />
-          <div style={{ maxWidth: 620, margin: "0 auto", padding: "24px 20px", position: "relative", zIndex: 1 }}>
-            {scr !== "home" && <button onClick={() => setScr("home")} style={{ background: "rgba(255,255,255,0.8)", border: "2px solid #e0d6c8", borderRadius: 50, width: 42, height: 42, fontSize: 18, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 3px 10px rgba(0,0,0,0.06)", marginBottom: 8 }}>←</button>}
-            <div style={{ textAlign: "center", marginBottom: 20 }}>
-              <div style={{ fontSize: 40, display: "inline-block" }}>🕰️</div>
-              <h1 style={{ fontFamily: "'Gaegu', cursive", fontSize: scr === "home" ? 38 : 28, color: "#3d3027", margin: "4px 0 0" }}>
-                {scr === "home" ? tx("appTitle", lang) : tx(scr, lang)}
-              </h1>
-              {scr === "home" && <p style={{ color: "#8a7e72", fontSize: 18, margin: "4px 0 0" }}>{tx("sub", lang)} ✨</p>}
-            </div>
+          <div style={{ maxWidth: 620, margin: "0 auto", padding: "16px 20px", position: "relative", zIndex: 1 }}>
+            {scr !== "home" ? (
+              <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 14 }}>
+                <button onClick={() => setScr("home")} style={{ background: "rgba(255,255,255,0.8)", border: "2px solid #e0d6c8", borderRadius: 50, width: 42, height: 42, fontSize: 18, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 3px 10px rgba(0,0,0,0.06)", flexShrink: 0 }}>←</button>
+                <h1 style={{ fontFamily: "'Gaegu', cursive", fontSize: 26, color: "#3d3027", margin: 0 }}>🕰️ {tx(scr, lang)}</h1>
+              </div>
+            ) : (
+              <div style={{ textAlign: "center", marginBottom: 18 }}>
+                <div style={{ fontSize: 40, display: "inline-block" }}>🕰️</div>
+                <h1 style={{ fontFamily: "'Gaegu', cursive", fontSize: 38, color: "#3d3027", margin: "4px 0 0" }}>{tx("appTitle", lang)}</h1>
+                <p style={{ color: "#8a7e72", fontSize: 18, margin: "4px 0 0" }}>{tx("sub", lang)} ✨</p>
+              </div>
+            )}
 
             {scr === "home" && (
               <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
