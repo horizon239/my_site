@@ -335,8 +335,8 @@
       if (mode === null) return (
         <div style={{ textAlign: "center", padding: "0 16px" }}>
           <h2 style={{ fontFamily: "'Gaegu',cursive", fontSize: 26, color: "#3d3027", margin: "0 0 16px" }}>{tx("diff", lang)}</h2>
-          <div style={{ display: "flex", gap: 8, justifyContent: "center", marginBottom: 24, flexWrap: "wrap" }}>
-            {lvLabels.map(function (lb, i) { return <button key={i} onClick={function () { setLv(i); }} style={{ padding: "10px 22px", fontSize: 17, borderRadius: 30, fontWeight: 700, border: lv === i ? "3px solid " + AC : "3px solid #e0d6c8", background: lv === i ? AC + "20" : "#fff", color: lv === i ? AC : "#5a5049", cursor: "pointer" }}>{lb}</button>; })}
+          <div style={{ display: "flex", gap: 4, justifyContent: "center", marginBottom: 24, flexWrap: "nowrap" }}>
+            {lvLabels.map(function (lb, i) { return <button key={i} onClick={function () { setLv(i); }} style={{ padding: "10px 12px", fontSize: 14, borderRadius: 30, fontWeight: 700, border: lv === i ? "3px solid " + AC : "3px solid #e0d6c8", background: lv === i ? AC + "20" : "#fff", color: lv === i ? AC : "#5a5049", cursor: "pointer", whiteSpace: "nowrap", flex: "0 1 auto" }}>{lb}</button>; })}
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 12, maxWidth: 300, margin: "0 auto" }}>
             <BigBtn bg={HC} onClick={function () { setMode("read"); setSc(0); setRd(0); }}>🔍 {tx("readQ", lang)}</BigBtn>
