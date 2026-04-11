@@ -3,202 +3,518 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MY SITE</title>
+  <title>Clock Adventure</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+KR:wght@300;400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&family=Bagel+Fat+One&family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    :root {
-      --bg: #0a0a0a;
-      --surface: #111113;
-      --border: rgba(255,255,255,0.07);
-      --text: #e8e4dc;
-      --muted: #555;
-      --accent: #c8a96e;
-    }
-
-    html, body {
-      height: 100%;
-      background: var(--bg);
-      color: var(--text);
-      font-family: 'Noto Sans KR', sans-serif;
-      font-weight: 300;
-      overflow: hidden;
-    }
-
-    /* 배경 노이즈 텍스처 */
-    body::before {
-      content: '';
-      position: fixed;
-      inset: 0;
-      background-image:
-        radial-gradient(ellipse 80% 60% at 50% 0%, rgba(200,169,110,0.06) 0%, transparent 60%),
-        radial-gradient(ellipse 40% 40% at 80% 80%, rgba(200,169,110,0.03) 0%, transparent 50%);
-      pointer-events: none;
-      z-index: 0;
-    }
-
-    /* 가는 격자 */
-    body::after {
-      content: '';
-      position: fixed;
-      inset: 0;
-      background-image:
-        linear-gradient(var(--border) 1px, transparent 1px),
-        linear-gradient(90deg, var(--border) 1px, transparent 1px);
-      background-size: 80px 80px;
-      pointer-events: none;
-      z-index: 0;
-    }
-
-    .wrap {
-      position: relative;
-      z-index: 1;
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 0;
-      padding: 40px 24px;
-      margin-top: -80px;
-    }
-
-    /* 상단 라인 장식 */
-    .deco-line {
-      width: 1px;
-      height: 80px;
-      background: linear-gradient(to bottom, transparent, var(--accent));
-      margin-bottom: 40px;
-      opacity: 0;
-      animation: fadeDown 1s ease 0.2s forwards;
-    }
-
-    /* 로고 */
-    .logo {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: clamp(56px, 12vw, 110px);
-      letter-spacing: 0.18em;
-      color: var(--text);
-      line-height: 1;
-      opacity: 0;
-      animation: fadeUp 0.9s ease 0.5s forwards;
-    }
-
-    .logo-it {
-      background: linear-gradient(135deg, #60a5fa, #3b82f6, #06b6d4);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-
-    /* 로고 아래 얇은 선 */
-    .logo-bar {
-      width: 100%;
-      max-width: 420px;
-      height: 1px;
-      background: linear-gradient(to right, transparent, var(--accent), transparent);
-      margin: 20px 0 24px;
-      opacity: 0;
-      animation: fadeIn 0.8s ease 0.9s forwards;
-    }
-
-    /* 소개 문구 */
-    .tagline {
-      font-size: clamp(14px, 2.2vw, 17px);
-      color: #888;
-      letter-spacing: 0.25em;
-      text-transform: uppercase;
-      text-align: center;
-      line-height: 2;
-      opacity: 0;
-      animation: fadeUp 0.9s ease 1.1s forwards;
-    }
-
-    .tagline em {
-      font-style: normal;
-      color: var(--accent);
-    }
-
-    /* 하단 장식 */
-    .deco-bottom {
-      position: fixed;
-      bottom: 32px;
-      left: 50%;
-      transform: translateX(-50%);
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      opacity: 0;
-      animation: fadeIn 1s ease 1.6s forwards;
-    }
-    .deco-bottom span {
-      font-size: 24px;
-      letter-spacing: 0.2em;
-      color: #888;
-      text-transform: uppercase;
-    }
-    .deco-bottom::before,
-    .deco-bottom::after {
-      content: '';
-      width: 40px;
-      height: 1px;
-      background: #2a2a2a;
-    }
-
-    /* 모서리 장식 */
-    .corner {
-      position: fixed;
-      width: 24px;
-      height: 24px;
-      opacity: 0;
-      animation: fadeIn 0.8s ease 1.4s forwards;
-    }
-    .corner.tl { top: 24px; left: 24px; border-top: 1px solid var(--border); border-left: 1px solid var(--border); }
-    .corner.tr { top: 24px; right: 24px; border-top: 1px solid var(--border); border-right: 1px solid var(--border); }
-    .corner.bl { bottom: 24px; left: 24px; border-bottom: 1px solid var(--border); border-left: 1px solid var(--border); }
-    .corner.br { bottom: 24px; right: 24px; border-bottom: 1px solid var(--border); border-right: 1px solid var(--border); }
-
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(20px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-    @keyframes fadeDown {
-      from { opacity: 0; transform: translateY(-10px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to   { opacity: 1; }
-    }
+    body { font-family: 'Noto Sans KR', sans-serif; }
+    button:active { transform: scale(0.95) !important; }
   </style>
 </head>
 <body>
+  <div id="root"></div>
 
-  <div class="corner tl"></div>
-  <div class="corner tr"></div>
-  <div class="corner bl"></div>
-  <div class="corner br"></div>
+  <script type="text/babel">
+    const { useState, useEffect, useRef, useCallback } = React;
 
-  <div class="wrap">
-    <div class="deco-line"></div>
+    const LANGS = [
+      { code: "en", name: "English", flag: "🇺🇸" },
+      { code: "ko", name: "한국어", flag: "🇰🇷" },
+      { code: "ja", name: "日本語", flag: "🇯🇵" },
+      { code: "zh", name: "中文", flag: "🇨🇳" },
+      { code: "es", name: "Español", flag: "🇪🇸" },
+      { code: "fr", name: "Français", flag: "🇫🇷" },
+      { code: "de", name: "Deutsch", flag: "🇩🇪" },
+      { code: "pt", name: "Português", flag: "🇧🇷" },
+      { code: "hi", name: "हिन्दी", flag: "🇮🇳" },
+      { code: "ar", name: "العربية", flag: "🇸🇦" },
+    ];
 
-    <!-- ★ 사이트 이름을 여기에 입력하세요 ★ -->
-    <div class="logo">MY S<span class="logo-it">IT</span>E</div>
+    const I = {
+      appTitle: { en: "Clock Adventure", ko: "시계 나라 여행", ja: "時計の冒険", zh: "时钟冒险", es: "Aventura del Reloj", fr: "Aventure Horloge", de: "Uhr-Abenteuer", pt: "Aventura do Relógio", hi: "घड़ी का सफ़र", ar: "مغامرة الساعة" },
+      sub: { en: "Learn to read clocks!", ko: "바늘 시계, 같이 배워요!", ja: "時計の読み方を学ぼう！", zh: "一起学习看时钟！", es: "¡Aprende a leer el reloj!", fr: "Apprends à lire l'heure !", de: "Lerne die Uhr lesen!", pt: "Aprenda a ler o relógio!", hi: "घड़ी पढ़ना सीखें!", ar: "تعلم قراءة الساعة!" },
+      learn: { en: "Learn", ko: "배우기", ja: "学ぶ", zh: "学习", es: "Aprender", fr: "Apprendre", de: "Lernen", pt: "Aprender", hi: "सीखें", ar: "تعلّم" },
+      learnD: { en: "Hour & minute hands step by step", ko: "시침, 분침 차근차근", ja: "時針と分針を学ぼう", zh: "一步步学习指针", es: "Paso a paso", fr: "Pas à pas", de: "Schritt für Schritt", pt: "Passo a passo", hi: "कदम दर कदम", ar: "خطوة بخطوة" },
+      play: { en: "Play", ko: "놀아보기", ja: "遊ぶ", zh: "玩一玩", es: "Jugar", fr: "Jouer", de: "Spielen", pt: "Brincar", hi: "खेलें", ar: "العب" },
+      playD: { en: "Drag the hands yourself!", ko: "바늘을 직접 돌려봐요", ja: "針を動かそう！", zh: "自己拖动指针！", es: "¡Arrastra las agujas!", fr: "Déplace les aiguilles !", de: "Ziehe die Zeiger!", pt: "Arraste os ponteiros!", hi: "सुइयाँ घुमाएँ!", ar: "اسحب العقارب!" },
+      quiz: { en: "Quiz", ko: "퀴즈", ja: "クイズ", zh: "测验", es: "Quiz", fr: "Quiz", de: "Quiz", pt: "Quiz", hi: "क्विज़", ar: "اختبار" },
+      quizD: { en: "Test what you learned!", ko: "배운 걸 확인해봐요", ja: "学んだことを確認！", zh: "测试你学到的！", es: "¡Pon a prueba!", fr: "Teste-toi !", de: "Teste dich!", pt: "Teste-se!", hi: "जाँचें!", ar: "اختبر نفسك!" },
+      now: { en: "Current Time", ko: "지금 시각", ja: "現在の時刻", zh: "当前时间", es: "Hora actual", fr: "Heure actuelle", de: "Aktuelle Uhrzeit", pt: "Hora atual", hi: "अभी का समय", ar: "الوقت الحالي" },
+      hourH: { en: "Hour (short)", ko: "시침 (짧은 바늘)", ja: "時針（短い）", zh: "时针（短）", es: "Hora (corta)", fr: "Heures (courte)", de: "Stunde (kurz)", pt: "Hora (curto)", hi: "घंटा (छोटी)", ar: "ساعات (قصير)" },
+      minH: { en: "Minute (long)", ko: "분침 (긴 바늘)", ja: "分針（長い）", zh: "分针（长）", es: "Minuto (larga)", fr: "Minutes (longue)", de: "Minute (lang)", pt: "Minuto (longo)", hi: "मिनट (लम्बी)", ar: "دقائق (طويل)" },
+      next: { en: "Next →", ko: "다음 →", ja: "次 →", zh: "下一步 →", es: "Siguiente →", fr: "Suivant →", de: "Weiter →", pt: "Próximo →", hi: "अगला →", ar: "→ التالي" },
+      prev: { en: "← Back", ko: "← 이전", ja: "← 前", zh: "← 上一步", es: "← Anterior", fr: "← Précédent", de: "← Zurück", pt: "← Anterior", hi: "← पिछला", ar: "السابق ←" },
+      done: { en: "All done!", ko: "다 배웠어요!", ja: "完了！", zh: "全部学完了！", es: "¡Listo!", fr: "Terminé !", de: "Geschafft!", pt: "Pronto!", hi: "हो गया!", ar: "تم!" },
+      drag: { en: "Drag the hands to explore!", ko: "바늘을 손으로 돌려보세요!", ja: "針をドラッグしてみよう！", zh: "拖动指针探索吧！", es: "¡Arrastra para explorar!", fr: "Glisse pour explorer !", de: "Ziehe zum Erkunden!", pt: "Arraste para explorar!", hi: "खींचकर देखें!", ar: "اسحب للاستكشاف!" },
+      home: { en: "Home", ko: "돌아가기", ja: "ホーム", zh: "首页", es: "Inicio", fr: "Accueil", de: "Start", pt: "Início", hi: "होम", ar: "الرئيسية" },
+      whatTime: { en: "What time is it?", ko: "몇 시일까요?", ja: "何時ですか？", zh: "现在几点？", es: "¿Qué hora es?", fr: "Quelle heure est-il ?", de: "Wie spät ist es?", pt: "Que horas são?", hi: "कितने बजे?", ar: "كم الساعة؟" },
+      setTime: { en: "Drag hands to match!", ko: "바늘을 돌려서 맞춰보세요!", ja: "針を合わせよう！", zh: "拖动指针匹配！", es: "¡Ajusta las agujas!", fr: "Ajuste les aiguilles !", de: "Stelle die Zeiger ein!", pt: "Ajuste os ponteiros!", hi: "सुइयाँ मिलाएँ!", ar: "اضبط العقارب!" },
+      submit: { en: "Submit!", ko: "이걸로!", ja: "決定！", zh: "提交！", es: "¡Enviar!", fr: "Valider !", de: "Fertig!", pt: "Enviar!", hi: "जमा!", ar: "تأكيد!" },
+      correct: { en: "Correct!", ko: "정답!", ja: "正解！", zh: "正确！", es: "¡Correcto!", fr: "Correct !", de: "Richtig!", pt: "Correto!", hi: "सही!", ar: "صحيح!" },
+      readQ: { en: "Read the Clock", ko: "시계 읽기", ja: "時計を読む", zh: "读时钟", es: "Leer el Reloj", fr: "Lire l'Horloge", de: "Uhr ablesen", pt: "Ler o Relógio", hi: "घड़ी पढ़ें", ar: "اقرأ الساعة" },
+      setQ: { en: "Set the Clock", ko: "시계 만들기", ja: "時計を合わせる", zh: "设置时钟", es: "Ajustar el Reloj", fr: "Régler l'Horloge", de: "Uhr einstellen", pt: "Ajustar o Relógio", hi: "घड़ी सेट करें", ar: "اضبط الساعة" },
+      score: { en: "Score", ko: "점수", ja: "スコア", zh: "得分", es: "Puntos", fr: "Score", de: "Punkte", pt: "Pontos", hi: "स्कोर", ar: "النقاط" },
+      qNum: { en: "Q", ko: "문제", ja: "問", zh: "题", es: "P", fr: "Q", de: "F", pt: "P", hi: "प्र", ar: "س" },
+      again: { en: "Try again", ko: "다시 도전", ja: "もう一度", zh: "再试", es: "De nuevo", fr: "Réessayer", de: "Nochmal", pt: "De novo", hi: "फिर से", ar: "حاول مجدداً" },
+      diff: { en: "Difficulty", ko: "난이도", ja: "難易度", zh: "难度", es: "Dificultad", fr: "Difficulté", de: "Schwierigkeit", pt: "Dificuldade", hi: "कठिनाई", ar: "الصعوبة" },
+      lvl: {
+        en: ["Exact hour", "Half hour", "Quarter", "5 minutes"],
+        ko: ["정각", "30분", "15분", "5분"],
+        ja: ["ちょうど", "30分", "15分", "5分"],
+        zh: ["整点", "半小时", "一刻钟", "5分钟"],
+        es: ["Hora exacta", "Media hora", "Cuarto", "5 minutos"],
+        fr: ["Heure pile", "Demi-heure", "Quart", "5 minutes"],
+        de: ["Volle Stunde", "Halbe Stunde", "Viertel", "5 Minuten"],
+        pt: ["Hora exata", "Meia hora", "Quarto", "5 minutos"],
+        hi: ["पूरा घंटा", "आधा घंटा", "चौथाई", "5 मिनट"],
+        ar: ["بالضبط", "نصف ساعة", "ربع ساعة", "5 دقائق"],
+      },
+    };
 
-    <div class="logo-bar"></div>
+    function tx(key, lang) { const v = I[key]; if (!v) return key; return v[lang] || v.en || key; }
 
-    <!-- ★ 소개 문구를 여기에 입력하세요 ★ -->
-    <p class="tagline">
-      Coming <em>Soon</em><br>
-      M, T 그리고 S가 함께 만드는<br> 멋진 웹사이트입니다.<br>
-    </p>
-  </div>
+    function fmtTime(h, m, lang) {
+      if (lang === "ko") return h + "시 " + (m === 0 ? "정각" : m + "분");
+      if (lang === "ja") return h + "時" + (m === 0 ? "ちょうど" : m + "分");
+      if (lang === "zh") return h + "点" + (m === 0 ? "整" : m + "分");
+      return h + ":" + String(m).padStart(2, "0");
+    }
 
-  <div class="deco-bottom">
-    <span>2026</span>
-  </div>
+    const LESSONS = {
+      en: [
+        { t: "The Short Hand", d: "A clock has two hands.\nThe short, thick one is the hour hand.\nIt tells us what hour it is!", tip: "Short hand points to 3 = 3 o'clock!", ex: [3,0], hl: "hour", sm: false },
+        { t: "Exact Hours", d: "When the long hand points to 12,\nit means the exact hour.\nThe short hand shows which hour!", tip: "Long hand at 12, short at 7 = 7 o'clock!", ex: [7,0], hl: "both", sm: true },
+        { t: "The Long Hand", d: "The long, thin hand is the minute hand.\nIt tells us how many minutes!\nAt 12, it means 0 minutes.", tip: "The long hand shows minutes!", ex: [4,0], hl: "minute", sm: true },
+        { t: "30 Minutes = Half!", d: "When the long hand points to 6,\nit is 30 minutes.\nWe call it half past!", tip: "Long hand at 6 = 30 min! Half past 9!", ex: [9,30], hl: "minute", sm: true },
+        { t: "Counting by 5s", d: "Between each big number is 5 minutes.\n1=5, 2=10, 3=15...\n6=30, 9=45, 12=0!", tip: "Long hand at 3 = 15 min! It is 2:15!", ex: [2,15], hl: "both", sm: true },
+      ],
+      ko: [
+        { t: "짧은 바늘을 알아봐요", d: "시계에는 바늘이 두 개 있어요.\n짧고 굵은 바늘이 시침이에요.\n시침은 몇 시인지 알려줘요!", tip: "짧은 바늘이 3을 가리키면 = 3시!", ex: [3,0], hl: "hour", sm: false },
+        { t: "정각을 읽어봐요", d: "긴 바늘이 12를 가리키면\n정각이에요.\n짧은 바늘이 가리키는 숫자가 시간!", tip: "긴 바늘 → 12, 짧은 바늘 → 7 = 7시!", ex: [7,0], hl: "both", sm: true },
+        { t: "긴 바늘을 알아봐요", d: "길고 가는 바늘이 분침이에요.\n분침은 몇 분인지 알려줘요!\n12에 있으면 0분(정각)이에요.", tip: "긴 바늘은 분을 알려주는 친구!", ex: [4,0], hl: "minute", sm: true },
+        { t: "30분 = 반!", d: "긴 바늘이 6을 가리키면\n30분이에요.\n반이라고도 불러요!", tip: "긴 바늘 → 6 = 30분(반)! 9시 반!", ex: [9,30], hl: "minute", sm: true },
+        { t: "5분씩 세어봐요", d: "큰 숫자 사이는 5분이에요.\n1=5분, 2=10분, 3=15분...\n6=30분, 9=45분, 12=0분!", tip: "긴 바늘 → 3 = 15분! 2시 15분!", ex: [2,15], hl: "both", sm: true },
+      ],
+      ja: [
+        { t: "短い針を知ろう", d: "時計には2つの針があるよ。\n短くて太い針が時針だよ。\n時針は何時かを教えてくれる！", tip: "短い針が3を指す = 3時！", ex: [3,0], hl: "hour", sm: false },
+        { t: "ちょうどの時間", d: "長い針が12を指すと\nちょうどだよ。\n短い針が指す数字が時間！", tip: "長い針→12、短い針→7 = 7時！", ex: [7,0], hl: "both", sm: true },
+        { t: "長い針を知ろう", d: "長くて細い針が分針だよ。\n分針は何分かを教えてくれる！\n12にあると0分。", tip: "長い針は分を教えてくれる友達！", ex: [4,0], hl: "minute", sm: true },
+        { t: "30分 = 半！", d: "長い針が6を指すと\n30分だよ。\n半とも言うよ！", tip: "長い針→6 = 30分！ 9時半！", ex: [9,30], hl: "minute", sm: true },
+        { t: "5分ずつ数えよう", d: "大きな数字の間は5分。\n1=5分、2=10分、3=15分...\n6=30分、9=45分、12=0分！", tip: "長い針→3 = 15分！ 2時15分！", ex: [2,15], hl: "both", sm: true },
+      ],
+      zh: [
+        { t: "认识短针", d: "时钟有两根针。\n短而粗的是时针。\n时针告诉我们几点！", tip: "短针指向3 = 3点！", ex: [3,0], hl: "hour", sm: false },
+        { t: "读整点", d: "长针指向12时，\n就是整点。\n短针指向的数字就是几点！", tip: "长针→12，短针→7 = 7点！", ex: [7,0], hl: "both", sm: true },
+        { t: "认识长针", d: "长而细的是分针。\n分针告诉我们几分！\n在12上就是0分。", tip: "长针是告诉分钟的好朋友！", ex: [4,0], hl: "minute", sm: true },
+        { t: "30分 = 半！", d: "长针指向6时，\n就是30分。\n也叫半！", tip: "长针→6 = 30分！ 9点半！", ex: [9,30], hl: "minute", sm: true },
+        { t: "每5分钟数一次", d: "大数字之间是5分钟。\n1=5分，2=10分，3=15分...\n6=30分，9=45分，12=0分！", tip: "长针→3 = 15分！ 2点15分！", ex: [2,15], hl: "both", sm: true },
+      ],
+    };
 
+    const HC = "#FF6348", MC = "#3742FA", AC = "#FF9F43", SC = "#2ED573";
+
+    function rand(a, b) { return a + Math.floor(Math.random() * (b - a + 1)); }
+    function shuf(a) { const b = [...a]; for (let i = b.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [b[i], b[j]] = [b[j], b[i]]; } return b; }
+    function aToM(a) { return Math.round((((a % 360) + 360) % 360) / 6) % 60; }
+    function aToH(a) { let h = Math.round((((a % 360) + 360) % 360) / 30) % 12; return h === 0 ? 12 : h; }
+
+    function LangPicker({ lang, setLang }) {
+      const [open, setOpen] = useState(false);
+      const cur = LANGS.find(l => l.code === lang);
+      return (
+        <div style={{ position: "fixed", top: 10, right: 10, zIndex: 9999 }}>
+          <button onClick={() => setOpen(!open)} style={{
+            display: "flex", alignItems: "center", gap: 6, padding: "7px 12px",
+            background: "rgba(255,255,255,0.95)", border: "2px solid #e0d6c8",
+            borderRadius: 12, cursor: "pointer", fontSize: 14,
+            boxShadow: "0 3px 12px rgba(0,0,0,0.1)",
+          }}>
+            <span style={{ fontSize: 18 }}>{cur.flag}</span>
+            <span style={{ color: "#3d3027", fontWeight: 600 }}>{cur.name}</span>
+            <span style={{ fontSize: 10, color: "#aaa" }}>{open ? "▲" : "▼"}</span>
+          </button>
+          {open && (
+            <div>
+              <div onClick={() => setOpen(false)} style={{ position: "fixed", inset: 0, zIndex: -1 }} />
+              <div style={{
+                position: "absolute", top: "calc(100% + 4px)", right: 0,
+                background: "#fff", borderRadius: 14, padding: 4,
+                boxShadow: "0 8px 30px rgba(0,0,0,0.18)", border: "2px solid #f0ebe3",
+                minWidth: 170, maxHeight: "55vh", overflowY: "auto",
+              }}>
+                {LANGS.map(l => (
+                  <button key={l.code} onClick={() => { setLang(l.code); setOpen(false); }} style={{
+                    display: "flex", alignItems: "center", gap: 8, width: "100%",
+                    padding: "9px 12px", border: "none", borderRadius: 10,
+                    background: lang === l.code ? (AC + "20") : "transparent",
+                    cursor: "pointer", fontSize: 14, textAlign: "left",
+                  }}>
+                    <span style={{ fontSize: 20 }}>{l.flag}</span>
+                    <span style={{ color: "#3d3027", fontWeight: lang === l.code ? 700 : 400 }}>{l.name}</span>
+                    {lang === l.code && <span style={{ marginLeft: "auto", color: AC }}>✓</span>}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    function Clock({ hour, minute, size = 260, showMin = true, hl = "both", drag = false, onChange, digital = true, fiveL = false, lang = "en" }) {
+      const ref = useRef(null);
+      const dRef = useRef(null);
+      const prevMinRef = useRef(minute);
+      const hourRef = useRef(hour);
+      const cx = size / 2, cy = size / 2, r = size * 0.42;
+      const hA = (hour % 12) * 30 + minute * 0.5, mA = minute * 6;
+
+      useEffect(() => { prevMinRef.current = minute; }, [minute]);
+      useEffect(() => { hourRef.current = hour; }, [hour]);
+
+      const getA = (e) => {
+        const rect = ref.current.getBoundingClientRect();
+        const px = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+        const py = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
+        let a = Math.atan2(py - rect.height / 2, px - rect.width / 2) * (180 / Math.PI) + 90;
+        return ((a % 360) + 360) % 360;
+      };
+
+      const onS = (hand) => (e) => { if (!drag) return; e.preventDefault(); e.stopPropagation(); dRef.current = hand; };
+
+      useEffect(() => {
+        if (!drag) return;
+        const mv = (e) => {
+          if (!dRef.current || !ref.current || !onChange) return;
+          e.preventDefault();
+          const a = getA(e);
+          if (dRef.current === "minute") {
+            const newMin = aToM(a);
+            const prevMin = prevMinRef.current;
+            let h = hourRef.current;
+            if (prevMin > 45 && newMin < 15) {
+              h = (h % 12) + 1;
+              if (h > 12) h = 1;
+            } else if (prevMin < 15 && newMin > 45) {
+              h = h - 1;
+              if (h < 1) h = 12;
+            }
+            prevMinRef.current = newMin;
+            hourRef.current = h;
+            onChange(h, newMin);
+          } else {
+            onChange(aToH(a), prevMinRef.current);
+          }
+        };
+        const up = () => { dRef.current = null; };
+        const o = { passive: false };
+        window.addEventListener("mousemove", mv, o);
+        window.addEventListener("mouseup", up);
+        window.addEventListener("touchmove", mv, o);
+        window.addEventListener("touchend", up);
+        return () => { window.removeEventListener("mousemove", mv); window.removeEventListener("mouseup", up); window.removeEventListener("touchmove", mv); window.removeEventListener("touchend", up); };
+      }, [drag, onChange]);
+
+      const hand = (angle, len, color, w, id) => {
+        const rad = ((angle - 90) * Math.PI) / 180;
+        const x2 = cx + Math.cos(rad) * len, y2 = cy + Math.sin(rad) * len;
+        const dim = hl !== "both" && hl !== id;
+        return (
+          <g>
+            <line x1={cx + 1} y1={cy + 1} x2={x2 + 1} y2={y2 + 1} stroke="rgba(0,0,0,0.1)" strokeWidth={w + 2} strokeLinecap="round" />
+            <line x1={cx} y1={cy} x2={x2} y2={y2} stroke={color} strokeWidth={w} strokeLinecap="round"
+              opacity={dim ? 0.2 : 1} style={{ cursor: drag ? "grab" : "default", transition: drag ? "none" : "all 0.5s ease" }}
+              onMouseDown={onS(id)} onTouchStart={onS(id)} />
+            {drag && <circle cx={x2} cy={y2} r={14} fill="transparent" style={{ cursor: "grab" }} onMouseDown={onS(id)} onTouchStart={onS(id)} />}
+          </g>
+        );
+      };
+
+      return (
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
+          <svg ref={ref} width={size} height={size} viewBox={"0 0 " + size + " " + size} style={{ filter: "drop-shadow(0 6px 20px rgba(0,0,0,0.1))", touchAction: "none" }}>
+            <circle cx={cx} cy={cy} r={r + 12} fill="#f0ebe3" />
+            <circle cx={cx} cy={cy} r={r + 6} fill="#FFFDF7" stroke="#e8e0d4" strokeWidth={2} />
+            {Array.from({ length: 60 }).map((_, i) => {
+              const hr = i % 5 === 0;
+              const rad = ((i * 6 - 90) * Math.PI) / 180;
+              return <line key={i} x1={cx + Math.cos(rad) * (r - (hr ? 14 : 6))} y1={cy + Math.sin(rad) * (r - (hr ? 14 : 6))} x2={cx + Math.cos(rad) * (r - 1)} y2={cy + Math.sin(rad) * (r - 1)} stroke={hr ? "#5a5049" : "#ccc"} strokeWidth={hr ? 2.5 : 1} />;
+            })}
+            {Array.from({ length: 12 }).map((_, i) => {
+              const n = i + 1, rad = ((n * 30 - 90) * Math.PI) / 180;
+              return <text key={n} x={cx + Math.cos(rad) * (r - 30)} y={cy + Math.sin(rad) * (r - 30)} textAnchor="middle" dominantBaseline="central" fill="#3d3027" fontSize={size * 0.072} fontFamily="'Gaegu', cursive" fontWeight="700">{n}</text>;
+            })}
+            {fiveL && Array.from({ length: 12 }).map((_, i) => {
+              const n = i + 1, ms = (n * 5) % 60, rad = ((n * 30 - 90) * Math.PI) / 180;
+              return <text key={"m" + n} x={cx + Math.cos(rad) * (r + 2)} y={cy + Math.sin(rad) * (r + 2)} textAnchor="middle" dominantBaseline="central" fill={MC} fontSize={9} fontWeight="700" opacity={0.6}>{ms}</text>;
+            })}
+            {showMin && hand(mA, r * 0.78, MC, 3.5, "minute")}
+            {hand(hA, r * 0.52, HC, 6, "hour")}
+            <circle cx={cx} cy={cy} r={6} fill="#3d3027" />
+            <circle cx={cx} cy={cy} r={3} fill="#fff" />
+          </svg>
+          <div style={{ display: "flex", gap: 14, fontSize: 12 }}>
+            <span style={{ color: HC, fontWeight: 700 }}>● {tx("hourH", lang)}</span>
+            {showMin && <span style={{ color: MC, fontWeight: 700 }}>● {tx("minH", lang)}</span>}
+          </div>
+          {digital && <div style={{ background: "#1e272e", borderRadius: 14, padding: "10px 24px", fontFamily: "'Bagel Fat One', cursive", fontSize: 28, color: "#7bed9f", letterSpacing: 3, boxShadow: "inset 0 2px 8px rgba(0,0,0,0.5)", border: "3px solid #3d3027" }}>
+            {String(hour).padStart(2, "0")} : {String(minute).padStart(2, "0")}
+          </div>}
+        </div>
+      );
+    }
+
+    function LearnMode({ lang, onHome }) {
+      const [step, setStep] = useState(0);
+      const lessons = LESSONS[lang] || LESSONS.en;
+      const ls = lessons[step];
+      return (
+        <div style={{ textAlign: "center", padding: "0 16px" }}>
+          <div style={{ display: "flex", gap: 6, justifyContent: "center", marginBottom: 20 }}>
+            {lessons.map((_, i) => <div key={i} style={{ width: 36, height: 6, borderRadius: 3, background: i <= step ? AC : "#e0d6c8", transition: "all 0.3s" }} />)}
+          </div>
+          <h2 style={{ fontFamily: "'Gaegu', cursive", fontSize: 26, color: "#3d3027", margin: "0 0 8px" }}>{ls.t}</h2>
+          <div style={{ background: "rgba(255,255,255,0.7)", borderRadius: 20, padding: "16px 20px", marginBottom: 16, border: "2px solid #f0ebe3" }}>
+            <p style={{ fontSize: 16, color: "#5a5049", lineHeight: 1.7, margin: 0, whiteSpace: "pre-line" }}>{ls.d}</p>
+          </div>
+          <Clock hour={ls.ex[0]} minute={ls.ex[1]} showMin={ls.sm} hl={ls.hl} fiveL={step >= 4} lang={lang} />
+          <div style={{ background: AC + "18", border: "2px dashed " + AC, borderRadius: 16, padding: "12px 16px", margin: "16px 0" }}>
+            <p style={{ fontSize: 15, color: HC, margin: 0, fontWeight: 700 }}>💡 {ls.tip}</p>
+          </div>
+          <div style={{ display: "flex", gap: 12, justifyContent: "center" }}>
+            {step > 0 && <Btn bg="#e0d6c8" c="#3d3027" onClick={() => setStep(s => s - 1)}>{tx("prev", lang)}</Btn>}
+            {step < lessons.length - 1 ? <Btn bg={AC} c="#fff" onClick={() => setStep(s => s + 1)}>{tx("next", lang)}</Btn>
+              : <Btn bg={SC} c="#fff" onClick={onHome}>🎉 {tx("done", lang)}</Btn>}
+          </div>
+        </div>
+      );
+    }
+
+    function PlayMode({ lang, onHome }) {
+      const [hour, setHour] = useState(12);
+      const [minute, setMinute] = useState(0);
+      return (
+        <div style={{ textAlign: "center", padding: "0 16px" }}>
+          <p style={{ fontSize: 16, color: "#5a5049", marginBottom: 16 }}>🖐️ {tx("drag", lang)}</p>
+          <Clock hour={hour} minute={minute} size={280} drag showMin onChange={(h, m) => { setHour(h); setMinute(m); }} fiveL lang={lang} />
+          <div style={{ marginTop: 16, background: "rgba(255,255,255,0.8)", borderRadius: 20, padding: "16px 24px", border: "2px solid #f0ebe3" }}>
+            <p style={{ fontSize: 22, fontFamily: "'Gaegu', cursive", fontWeight: 700, color: "#3d3027", margin: 0 }}>
+              {fmtTime(hour, minute, lang)}
+            </p>
+          </div>
+          <Btn bg="#e0d6c8" c="#3d3027" onClick={onHome} style={{ marginTop: 20 }}>🏠 {tx("home", lang)}</Btn>
+        </div>
+      );
+    }
+
+    const QL = [
+      () => ({ h: rand(1, 12), m: 0 }),
+      () => ({ h: rand(1, 12), m: Math.random() > 0.5 ? 0 : 30 }),
+      () => ({ h: rand(1, 12), m: [0, 15, 30, 45][rand(0, 3)] }),
+      () => ({ h: rand(1, 12), m: rand(0, 11) * 5 }),
+    ];
+
+    function QuizMode({ lang, onHome }) {
+      const [lv, setLv] = useState(0);
+      const [mode, setMode] = useState(null);
+      const [q, setQ] = useState(null);
+      const [opts, setOpts] = useState([]);
+      const [sel, setSel] = useState(null);
+      const [fb, setFb] = useState(null);
+      const [sc, setSc] = useState(0);
+      const [rd, setRd] = useState(0);
+      const [sH, setSH] = useState(12);
+      const [sM, setSM] = useState(0);
+      const [done, setDone] = useState(false);
+      const total = 5;
+      const lvLabels = (I.lvl[lang] || I.lvl.en);
+
+      const newRead = useCallback(() => {
+        const nq = QL[lv]();
+        const cor = fmtTime(nq.h, nq.m, lang);
+        const os = new Set([cor]);
+        let tries = 0;
+        while (os.size < 4 && tries < 50) { const f = QL[lv](); os.add(fmtTime(f.h, f.m, lang)); tries++; }
+        setQ(nq); setOpts(shuf([...os])); setSel(null); setFb(null);
+      }, [lv, lang]);
+
+      const newSet = useCallback(() => {
+        setQ(QL[lv]()); setSH(12); setSM(0); setDone(false); setFb(null);
+      }, [lv]);
+
+      useEffect(() => {
+        if (mode === "read") newRead();
+        else if (mode === "set") newSet();
+      }, [mode]);
+
+      const doRead = (opt) => {
+        if (fb !== null) return;
+        setSel(opt);
+        const ok = opt === fmtTime(q.h, q.m, lang);
+        setFb(ok);
+        if (ok) setSc(s => s + 1);
+        setTimeout(() => { if (rd + 1 >= total) { setRd(r => r + 1); return; } setRd(r => r + 1); newRead(); }, 1300);
+      };
+
+      const doSet = () => {
+        if (done) return;
+        setDone(true);
+        const ok = sH === q.h && sM === q.m;
+        setFb(ok);
+        if (ok) setSc(s => s + 1);
+        setTimeout(() => { if (rd + 1 >= total) { setRd(r => r + 1); return; } setRd(r => r + 1); newSet(); }, 1300);
+      };
+
+      if (mode === null) return (
+        <div style={{ textAlign: "center", padding: "0 16px" }}>
+          <h2 style={{ fontFamily: "'Gaegu', cursive", fontSize: 26, color: "#3d3027", margin: "0 0 16px" }}>{tx("diff", lang)}</h2>
+          <div style={{ display: "flex", gap: 8, justifyContent: "center", marginBottom: 24, flexWrap: "wrap" }}>
+            {lvLabels.map((lb, i) => <button key={i} onClick={() => setLv(i)} style={{ padding: "8px 18px", fontSize: 14, borderRadius: 30, fontWeight: 700, border: lv === i ? "3px solid " + AC : "3px solid #e0d6c8", background: lv === i ? AC + "20" : "#fff", color: lv === i ? AC : "#5a5049", cursor: "pointer" }}>{lb}</button>)}
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 12, maxWidth: 280, margin: "0 auto" }}>
+            <BigBtn bg={HC} onClick={() => { setMode("read"); setSc(0); setRd(0); }}>🔍 {tx("readQ", lang)}</BigBtn>
+            <BigBtn bg={MC} onClick={() => { setMode("set"); setSc(0); setRd(0); }}>🖐️ {tx("setQ", lang)}</BigBtn>
+          </div>
+          <Btn bg="#e0d6c8" c="#3d3027" onClick={onHome} style={{ marginTop: 24 }}>🏠 {tx("home", lang)}</Btn>
+        </div>
+      );
+
+      if (rd >= total) {
+        const stars = sc >= 5 ? 3 : sc >= 3 ? 2 : 1;
+        return (
+          <div style={{ textAlign: "center", padding: "20px 16px" }}>
+            <div style={{ fontSize: 56, marginBottom: 12 }}>{"⭐".repeat(stars)}</div>
+            <h2 style={{ fontFamily: "'Gaegu', cursive", fontSize: 30, color: "#3d3027", margin: "0 0 8px" }}>
+              {sc >= 5 ? "🎉" : sc >= 3 ? "👏" : "💪"}
+            </h2>
+            <p style={{ fontSize: 20, color: "#5a5049" }}>{sc} / {total} {tx("correct", lang)}</p>
+            <div style={{ display: "flex", gap: 12, justifyContent: "center", marginTop: 24 }}>
+              <Btn bg={AC} c="#fff" onClick={() => { setMode(null); setSc(0); setRd(0); }}>{tx("again", lang)}</Btn>
+              <Btn bg="#e0d6c8" c="#3d3027" onClick={onHome}>🏠 {tx("home", lang)}</Btn>
+            </div>
+          </div>
+        );
+      }
+
+      if (!q) return null;
+
+      if (mode === "read") return (
+        <div style={{ textAlign: "center", padding: "0 16px" }}>
+          <div style={{ display: "flex", justifyContent: "center", gap: 16, marginBottom: 16 }}>
+            <Badge l={tx("score", lang)} v={sc} c="#FECA57" />
+            <Badge l={tx("qNum", lang)} v={(rd + 1) + "/" + total} c="#48DBFB" />
+          </div>
+          <p style={{ fontSize: 18, fontFamily: "'Gaegu', cursive", fontWeight: 700, color: "#3d3027", marginBottom: 12 }}>{tx("whatTime", lang)} 🤔</p>
+          <Clock hour={q.h} minute={q.m} showMin digital={false} fiveL lang={lang} />
+          {fb !== null && <div style={{ fontSize: 24, margin: "12px 0" }}>{fb ? ("🎉 " + tx("correct", lang)) : ("😅 " + fmtTime(q.h, q.m, lang))}</div>}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, maxWidth: 300, margin: "12px auto 0" }}>
+            {opts.map((op, i) => {
+              const cor = fmtTime(q.h, q.m, lang);
+              const isC = fb !== null && op === cor;
+              const isW = fb !== null && op === sel && !fb;
+              return <button key={i} onClick={() => doRead(op)} style={{ padding: "14px 8px", fontSize: 16, fontWeight: 700, border: isC ? "3px solid " + SC : isW ? "3px solid #e17055" : "3px solid #f0ebe3", borderRadius: 16, cursor: fb !== null ? "default" : "pointer", background: isC ? SC + "20" : isW ? "#ffeaeb" : "#fff", color: "#3d3027", boxShadow: "0 3px 10px rgba(0,0,0,0.06)" }}>{op}</button>;
+            })}
+          </div>
+        </div>
+      );
+
+      return (
+        <div style={{ textAlign: "center", padding: "0 16px" }}>
+          <div style={{ display: "flex", justifyContent: "center", gap: 16, marginBottom: 16 }}>
+            <Badge l={tx("score", lang)} v={sc} c="#FECA57" />
+            <Badge l={tx("qNum", lang)} v={(rd + 1) + "/" + total} c="#48DBFB" />
+          </div>
+          <div style={{ background: "#1e272e", borderRadius: 16, padding: "12px 28px", display: "inline-block", marginBottom: 12, border: "3px solid #3d3027" }}>
+            <span style={{ fontFamily: "'Bagel Fat One', cursive", fontSize: 26, color: "#7bed9f", letterSpacing: 2 }}>{fmtTime(q.h, q.m, lang)}</span>
+          </div>
+          <p style={{ fontSize: 15, color: "#5a5049", marginBottom: 12 }}>{tx("setTime", lang)}</p>
+          <Clock hour={sH} minute={sM} size={260} drag={!done} showMin onChange={(h, m) => { setSH(h); setSM(m); }} digital fiveL lang={lang} />
+          {fb !== null && <div style={{ fontSize: 24, margin: "12px 0" }}>{fb ? ("🎉 " + tx("correct", lang)) : ("😅 " + fmtTime(q.h, q.m, lang))}</div>}
+          {!done && <Btn bg={SC} c="#fff" onClick={doSet} style={{ marginTop: 12 }}>✅ {tx("submit", lang)}</Btn>}
+        </div>
+      );
+    }
+
+    function Badge({ l, v, c }) {
+      return <div style={{ background: "#fff", borderRadius: 14, padding: "6px 16px", border: "2px solid " + c, boxShadow: "0 3px 12px " + c + "30" }}>
+        <div style={{ fontSize: 11, color: "#888" }}>{l}</div>
+        <div style={{ fontSize: 20, fontFamily: "'Gaegu', cursive", fontWeight: 700, color: "#3d3027" }}>{v}</div>
+      </div>;
+    }
+
+    function Btn({ bg, c, onClick, children, style: s }) {
+      return <button onClick={onClick} style={{ padding: "12px 28px", fontSize: 16, fontWeight: 700, background: bg, color: c, border: "none", borderRadius: 50, cursor: "pointer", boxShadow: "0 4px 15px rgba(0,0,0,0.1)", ...s }}>{children}</button>;
+    }
+
+    function BigBtn({ bg, onClick, children }) {
+      return <button onClick={onClick} style={{ padding: "18px 24px", fontSize: 18, fontWeight: 700, background: bg, color: "#fff", border: "none", borderRadius: 20, cursor: "pointer", boxShadow: "0 6px 20px " + bg + "40", textAlign: "center" }}>{children}</button>;
+    }
+
+    function LiveClock({ lang }) {
+      const [t, setT] = useState(new Date());
+      useEffect(() => { const id = setInterval(() => setT(new Date()), 1000); return () => clearInterval(id); }, []);
+      return (
+        <div style={{ textAlign: "center" }}>
+          <p style={{ fontSize: 13, color: "#8a7e72", margin: "0 0 8px" }}>{tx("now", lang)}</p>
+          <Clock hour={t.getHours() % 12 || 12} minute={t.getMinutes()} size={180} digital showMin lang={lang} />
+        </div>
+      );
+    }
+
+    function App() {
+      const [lang, setLang] = useState("ko");
+      const [scr, setScr] = useState("home");
+      const menus = [
+        { id: "learn", emoji: "📖", tk: "learn", dk: "learnD", color: HC },
+        { id: "play", emoji: "🖐️", tk: "play", dk: "playD", color: MC },
+        { id: "quiz", emoji: "🧩", tk: "quiz", dk: "quizD", color: AC },
+      ];
+      return (
+        <div style={{ minHeight: "100vh", background: "linear-gradient(170deg, #fef9ef 0%, #fdecd0 40%, #f8e8d6 100%)", position: "relative" }}>
+          <LangPicker lang={lang} setLang={setLang} />
+          <div style={{ maxWidth: 420, margin: "0 auto", padding: "24px 16px", position: "relative", zIndex: 1 }}>
+            {scr !== "home" && <button onClick={() => setScr("home")} style={{ background: "rgba(255,255,255,0.8)", border: "2px solid #e0d6c8", borderRadius: 50, width: 42, height: 42, fontSize: 18, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 3px 10px rgba(0,0,0,0.06)", marginBottom: 8 }}>←</button>}
+            <div style={{ textAlign: "center", marginBottom: 20 }}>
+              <div style={{ fontSize: 40, display: "inline-block" }}>🕰️</div>
+              <h1 style={{ fontFamily: "'Gaegu', cursive", fontSize: scr === "home" ? 32 : 24, color: "#3d3027", margin: "4px 0 0" }}>
+                {scr === "home" ? tx("appTitle", lang) : tx(scr, lang)}
+              </h1>
+              {scr === "home" && <p style={{ color: "#8a7e72", fontSize: 15, margin: "4px 0 0" }}>{tx("sub", lang)} ✨</p>}
+            </div>
+
+            {scr === "home" && (
+              <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                {menus.map((item) => (
+                  <button key={item.id} onClick={() => setScr(item.id)} style={{
+                    display: "flex", alignItems: "center", gap: 16, padding: "20px 22px",
+                    background: "rgba(255,255,255,0.9)", border: "2px solid #f0ebe3",
+                    borderRadius: 22, cursor: "pointer", boxShadow: "0 6px 24px rgba(0,0,0,0.05)", textAlign: "left",
+                  }}>
+                    <div style={{ fontSize: 36, width: 60, height: 60, display: "flex", alignItems: "center", justifyContent: "center", background: item.color + "12", borderRadius: 16, flexShrink: 0 }}>{item.emoji}</div>
+                    <div>
+                      <div style={{ fontFamily: "'Gaegu', cursive", fontSize: 22, fontWeight: 700, color: "#3d3027" }}>{tx(item.tk, lang)}</div>
+                      <div style={{ fontSize: 14, color: "#8a7e72", marginTop: 2 }}>{tx(item.dk, lang)}</div>
+                    </div>
+                    <div style={{ marginLeft: "auto", fontSize: 20, color: "#ccc" }}>▶</div>
+                  </button>
+                ))}
+                <div style={{ marginTop: 8 }}><LiveClock lang={lang} /></div>
+              </div>
+            )}
+            {scr === "learn" && <LearnMode lang={lang} onHome={() => setScr("home")} />}
+            {scr === "play" && <PlayMode lang={lang} onHome={() => setScr("home")} />}
+            {scr === "quiz" && <QuizMode lang={lang} onHome={() => setScr("home")} />}
+          </div>
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById("root"));
+    root.render(<App />);
+  </script>
 </body>
 </html>
