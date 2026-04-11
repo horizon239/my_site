@@ -452,7 +452,7 @@
             <span style={{ fontFamily: "'Bagel Fat One', cursive", fontSize: 28, color: "#7bed9f", letterSpacing: 3 }}>{fmtTime(q.h, q.m, lang)}</span>
           </div>
           <p style={{ fontSize: 16, color: "#5a5049", margin: "0 0 6px" }}>{tx("setTime", lang)}</p>
-          <Clock hour={sH} minute={sM} size={clockSize} drag={!done} showMin onChange={(h, m) => { setSH(h); setSM(m); }} digital fiveL lang={lang} />
+          <Clock hour={sH} minute={sM} size={clockSize} drag={!done} showMin onChange={(h, m) => { setSH(h); setSM(m); }} digital={false} fiveL lang={lang} />
           {fb !== null && <div style={{ fontSize: 22, margin: "6px 0" }}>{fb ? ("🎉 " + tx("correct", lang)) : ("😅 " + fmtTime(q.h, q.m, lang))}</div>}
           {!done && <Btn bg={SC} c="#fff" onClick={doSet} style={{ marginTop: 8 }}>✅ {tx("submit", lang)}</Btn>}
         </div>
