@@ -13,6 +13,7 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: 'Noto Sans KR', sans-serif; }
     button:active { transform: scale(0.95) !important; }
+    * { -webkit-user-select: none; -webkit-touch-callout: none; user-select: none; }
   </style>
 </head>
 <body>
@@ -487,7 +488,7 @@
         { id: "quiz", emoji: "🧩", tk: "quiz", dk: "quizD", color: AC },
       ];
       return (
-        <div style={{ minHeight: "100vh", background: "linear-gradient(170deg, #fef9ef 0%, #fdecd0 40%, #f8e8d6 100%)", position: "relative" }}>
+        <div style={{ minHeight: "100vh", background: "linear-gradient(170deg, #fef9ef 0%, #fdecd0 40%, #f8e8d6 100%)", position: "relative", userSelect: "none", WebkitUserSelect: "none", WebkitTouchCallout: "none" }}>
           <LangPicker lang={lang} setLang={setLang} />
           <div style={{ maxWidth: 620, margin: "0 auto", padding: "24px 20px", position: "relative", zIndex: 1 }}>
             {scr !== "home" && <button onClick={() => setScr("home")} style={{ background: "rgba(255,255,255,0.8)", border: "2px solid #e0d6c8", borderRadius: 50, width: 42, height: 42, fontSize: 18, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 3px 10px rgba(0,0,0,0.06)", marginBottom: 8 }}>←</button>}
