@@ -36,38 +36,41 @@
     ];
 
     const TT = {
-      appTitle: { en: "Clock Adventure", ko: "시계 나라 여행" },
-      sub: { en: "Learn to read clocks!", ko: "바늘 시계, 같이 배워요!" },
-      learn: { en: "Learn", ko: "배우기" },
-      learnD: { en: "Hour & minute hands step by step", ko: "시침, 분침 차근차근" },
-      play: { en: "Play", ko: "놀아보기" },
-      playD: { en: "Drag the hands yourself!", ko: "바늘을 직접 돌려봐요" },
-      quiz: { en: "Quiz", ko: "퀴즈" },
-      quizD: { en: "Test what you learned!", ko: "배운 걸 확인해봐요" },
-      now: { en: "Current Time", ko: "지금 시각" },
-      hourH: { en: "Hour (short)", ko: "시침 (짧은 바늘)" },
-      minH: { en: "Minute (long)", ko: "분침 (긴 바늘)" },
-      next: { en: "Next →", ko: "다음 →" },
-      prev: { en: "← Back", ko: "← 이전" },
-      done: { en: "All done!", ko: "다 배웠어요!" },
-      drag: { en: "Touch the clock and drag!", ko: "시계를 터치하고 돌려보세요!" },
-      home: { en: "Home", ko: "돌아가기" },
-      whatTime: { en: "What time is it?", ko: "몇 시일까요?" },
-      setTime: { en: "Drag hands to match!", ko: "바늘을 돌려서 맞춰보세요!" },
-      submit: { en: "Submit!", ko: "이걸로!" },
-      correct: { en: "Correct!", ko: "정답!" },
-      readQ: { en: "Read the Clock", ko: "시계 읽기" },
-      setQ: { en: "Set the Clock", ko: "시계 만들기" },
-      score: { en: "Score", ko: "점수" },
-      qNum: { en: "Q", ko: "문제" },
-      again: { en: "Try again", ko: "다시 도전" },
-      diff: { en: "Difficulty", ko: "난이도" },
-      lvl: { en: ["Exact hour", "Half hour", "Quarter", "5 minutes"], ko: ["정각", "30분", "15분", "5분"] },
+      appTitle: { en: "Clock Adventure", ko: "시계 나라 여행", ja: "時計の冒険", zh: "时钟冒险", es: "Aventura del Reloj", fr: "Aventure Horloge", de: "Uhr-Abenteuer", pt: "Aventura do Relogio", hi: "घड़ी का सफ़र", ar: "مغامرة الساعة" },
+      sub: { en: "Learn to read clocks!", ko: "바늘 시계, 같이 배워요!", ja: "時計の読み方を学ぼう！", zh: "一起学习看时钟！", es: "¡Aprende a leer el reloj!", fr: "Apprends a lire l heure !", de: "Lerne die Uhr lesen!", pt: "Aprenda a ler o relogio!", hi: "घड़ी पढ़ना सीखें!", ar: "تعلم قراءة الساعة!" },
+      learn: { en: "Learn", ko: "배우기", ja: "学ぶ", zh: "学习", es: "Aprender", fr: "Apprendre", de: "Lernen", pt: "Aprender", hi: "सीखें", ar: "تعلّم" },
+      learnD: { en: "Hour & minute hands step by step", ko: "시침, 분침 차근차근", ja: "時針と分針を学ぼう", zh: "一步步学习指针", es: "Paso a paso", fr: "Pas a pas", de: "Schritt fuer Schritt", pt: "Passo a passo", hi: "कदम दर कदम", ar: "خطوة بخطوة" },
+      play: { en: "Play", ko: "놀아보기", ja: "遊ぶ", zh: "玩一玩", es: "Jugar", fr: "Jouer", de: "Spielen", pt: "Brincar", hi: "खेलें", ar: "العب" },
+      playD: { en: "Drag the hands yourself!", ko: "바늘을 직접 돌려봐요", ja: "針を動かそう！", zh: "自己拖动指针！", es: "¡Arrastra las agujas!", fr: "Deplace les aiguilles !", de: "Ziehe die Zeiger!", pt: "Arraste os ponteiros!", hi: "सुइयाँ घुमाएँ!", ar: "اسحب العقارب!" },
+      quiz: { en: "Quiz", ko: "퀴즈", ja: "クイズ", zh: "测验", es: "Quiz", fr: "Quiz", de: "Quiz", pt: "Quiz", hi: "क्विज़", ar: "اختبار" },
+      quizD: { en: "Test what you learned!", ko: "배운 걸 확인해봐요", ja: "学んだことを確認！", zh: "测试你学到的！", es: "¡Pon a prueba!", fr: "Teste-toi !", de: "Teste dich!", pt: "Teste-se!", hi: "जाँचें!", ar: "اختبر نفسك!" },
+      now: { en: "Current Time", ko: "지금 시각", ja: "現在の時刻", zh: "当前时间", es: "Hora actual", fr: "Heure actuelle", de: "Aktuelle Uhrzeit", pt: "Hora atual", hi: "अभी का समय", ar: "الوقت الحالي" },
+      hourH: { en: "Hour (short)", ko: "시침 (짧은 바늘)", ja: "時針（短い）", zh: "时针（短）", es: "Hora (corta)", fr: "Heures (courte)", de: "Stunde (kurz)", pt: "Hora (curto)", hi: "घंटा (छोटी)", ar: "ساعات (قصير)" },
+      minH: { en: "Minute (long)", ko: "분침 (긴 바늘)", ja: "分針（長い）", zh: "分针（长）", es: "Minuto (larga)", fr: "Minutes (longue)", de: "Minute (lang)", pt: "Minuto (longo)", hi: "मिनट (लम्बी)", ar: "دقائق (طويل)" },
+      next: { en: "Next →", ko: "다음 →", ja: "次 →", zh: "下一步 →", es: "Siguiente →", fr: "Suivant →", de: "Weiter →", pt: "Proximo →", hi: "अगला →", ar: "التالي →" },
+      prev: { en: "← Back", ko: "← 이전", ja: "← 前", zh: "← 上一步", es: "← Anterior", fr: "← Precedent", de: "← Zurueck", pt: "← Anterior", hi: "← पिछला", ar: "السابق ←" },
+      done: { en: "All done!", ko: "다 배웠어요!", ja: "完了！", zh: "全部学完了！", es: "¡Listo!", fr: "Termine !", de: "Geschafft!", pt: "Pronto!", hi: "हो गया!", ar: "تم!" },
+      drag: { en: "Touch the clock and drag!", ko: "시계를 터치하고 돌려보세요!", ja: "時計をタッチして回そう！", zh: "触摸时钟并拖动！", es: "¡Toca y arrastra!", fr: "Touche et glisse !", de: "Beruehre und ziehe!", pt: "Toque e arraste!", hi: "छुएं और घुमाएं!", ar: "المس واسحب!" },
+      home: { en: "Home", ko: "돌아가기", ja: "ホーム", zh: "首页", es: "Inicio", fr: "Accueil", de: "Start", pt: "Inicio", hi: "होम", ar: "الرئيسية" },
+      whatTime: { en: "What time is it?", ko: "몇 시일까요?", ja: "何時ですか？", zh: "现在几点？", es: "¿Que hora es?", fr: "Quelle heure est-il ?", de: "Wie spaet ist es?", pt: "Que horas sao?", hi: "कितने बजे?", ar: "كم الساعة؟" },
+      setTime: { en: "Drag hands to match!", ko: "바늘을 돌려서 맞춰보세요!", ja: "針を合わせよう！", zh: "拖动指针匹配！", es: "¡Ajusta las agujas!", fr: "Ajuste les aiguilles !", de: "Stelle die Zeiger ein!", pt: "Ajuste os ponteiros!", hi: "सुइयाँ मिलाएँ!", ar: "اضبط العقارب!" },
+      submit: { en: "Submit!", ko: "이걸로!", ja: "決定！", zh: "提交！", es: "¡Enviar!", fr: "Valider !", de: "Fertig!", pt: "Enviar!", hi: "जमा!", ar: "تأكيد!" },
+      correct: { en: "Correct!", ko: "정답!", ja: "正解！", zh: "正确！", es: "¡Correcto!", fr: "Correct !", de: "Richtig!", pt: "Correto!", hi: "सही!", ar: "صحيح!" },
+      readQ: { en: "Read the Clock", ko: "시계 읽기", ja: "時計を読む", zh: "读时钟", es: "Leer el Reloj", fr: "Lire l Horloge", de: "Uhr ablesen", pt: "Ler o Relogio", hi: "घड़ी पढ़ें", ar: "اقرأ الساعة" },
+      setQ: { en: "Set the Clock", ko: "시계 만들기", ja: "時計を合わせる", zh: "设置时钟", es: "Ajustar el Reloj", fr: "Regler l Horloge", de: "Uhr einstellen", pt: "Ajustar o Relogio", hi: "घड़ी सेट करें", ar: "اضبط الساعة" },
+      score: { en: "Score", ko: "점수", ja: "スコア", zh: "得分", es: "Puntos", fr: "Score", de: "Punkte", pt: "Pontos", hi: "स्कोर", ar: "النقاط" },
+      qNum: { en: "Q", ko: "문제", ja: "問", zh: "题", es: "P", fr: "Q", de: "F", pt: "P", hi: "प्र", ar: "س" },
+      again: { en: "Try again", ko: "다시 도전", ja: "もう一度", zh: "再试", es: "De nuevo", fr: "Reessayer", de: "Nochmal", pt: "De novo", hi: "फिर से", ar: "حاول مجددا" },
+      diff: { en: "Difficulty", ko: "난이도", ja: "難易度", zh: "难度", es: "Dificultad", fr: "Difficulte", de: "Schwierigkeit", pt: "Dificuldade", hi: "कठिनाई", ar: "الصعوبة" },
+      lvl: { en: ["Exact hour", "Half hour", "Quarter", "5 minutes"], ko: ["정각", "30분", "15분", "5분"], ja: ["ちょうど", "30分", "15分", "5分"], zh: ["整点", "半小时", "一刻钟", "5分钟"], es: ["Hora exacta", "Media hora", "Cuarto", "5 minutos"], fr: ["Heure pile", "Demi-heure", "Quart", "5 minutes"], de: ["Volle Stunde", "Halbe Stunde", "Viertel", "5 Minuten"], pt: ["Hora exata", "Meia hora", "Quarto", "5 minutos"], hi: ["पूरा घंटा", "आधा घंटा", "चौथाई", "5 मिनट"], ar: ["بالضبط", "نصف ساعة", "ربع ساعة", "5 دقائق"] },
     };
 
     function tx(k, lang) { var v = TT[k]; if (!v) return k; return v[lang] || v.en || k; }
     function fmtTime(h, m, lang) {
       if (lang === "ko") return h + "시 " + (m === 0 ? "정각" : m + "분");
+      if (lang === "ja") return h + "時" + (m === 0 ? "ちょうど" : m + "分");
+      if (lang === "zh") return h + "点" + (m === 0 ? "整" : m + "分");
+      if (lang === "fr") return h + "h" + (m === 0 ? "00" : String(m).padStart(2, "0"));
       return h + ":" + String(m).padStart(2, "0");
     }
 
@@ -85,7 +88,65 @@
       { t: "30분 = 반!", d: "긴 바늘이 6을 가리키면\n30분이에요.\n반이라고도 불러요!", tip: "긴 바늘 → 6 = 30분(반)! 9시 반!", ex: [9, 30], hl: "minute", sm: true },
       { t: "5분씩 세어봐요", d: "큰 숫자 사이는 5분이에요.\n1=5분, 2=10분, 3=15분...\n6=30분, 9=45분, 12=0분!", tip: "긴 바늘 → 3 = 15분! 2시 15분!", ex: [2, 15], hl: "both", sm: true },
     ];
-    var ALL_LESSONS = { en: LESSONS_EN, ko: LESSONS_KO };
+    var ALL_LESSONS = {
+      en: LESSONS_EN, ko: LESSONS_KO,
+      ja: [
+        {t:"短い針を知ろう",d:"時計には2つの針があるよ。\n短くて太い針が時針だよ。\n時針は何時かを教えてくれる！",tip:"短い針が3を指す = 3時！",ex:[3,0],hl:"hour",sm:false},
+        {t:"ちょうどの時間",d:"長い針が12を指すと\nちょうどだよ。\n短い針が指す数字が時間！",tip:"長い針→12, 短い針→7 = 7時！",ex:[7,0],hl:"both",sm:true},
+        {t:"長い針を知ろう",d:"長くて細い針が分針だよ。\n分針は何分かを教えてくれる！\n12にあると0分。",tip:"長い針は分を教えてくれる友達！",ex:[4,0],hl:"minute",sm:true},
+        {t:"30分 = 半！",d:"長い針が6を指すと\n30分だよ。\n半とも言うよ！",tip:"長い針→6 = 30分！ 9時半！",ex:[9,30],hl:"minute",sm:true},
+        {t:"5分ずつ数えよう",d:"大きな数字の間は5分。\n1=5分, 2=10分, 3=15分...\n6=30分, 9=45分, 12=0分！",tip:"長い針→3 = 15分！ 2時15分！",ex:[2,15],hl:"both",sm:true},
+      ],
+      zh: [
+        {t:"认识短针",d:"时钟有两根针。\n短而粗的是时针。\n时针告诉我们几点！",tip:"短针指向3 = 3点！",ex:[3,0],hl:"hour",sm:false},
+        {t:"读整点",d:"长针指向12时，\n就是整点。\n短针指向的数字就是几点！",tip:"长针→12, 短针→7 = 7点！",ex:[7,0],hl:"both",sm:true},
+        {t:"认识长针",d:"长而细的是分针。\n分针告诉我们几分！\n在12上就是0分。",tip:"长针是告诉分钟的好朋友！",ex:[4,0],hl:"minute",sm:true},
+        {t:"30分 = 半！",d:"长针指向6时，\n就是30分。\n也叫半！",tip:"长针→6 = 30分！ 9点半！",ex:[9,30],hl:"minute",sm:true},
+        {t:"每5分钟数一次",d:"大数字之间是5分钟。\n1=5分, 2=10分, 3=15分...\n6=30分, 9=45分, 12=0分！",tip:"长针→3 = 15分！ 2点15分！",ex:[2,15],hl:"both",sm:true},
+      ],
+      es: [
+        {t:"La aguja corta",d:"Un reloj tiene dos agujas.\nLa corta y gruesa es el horario.\nNos dice que hora es!",tip:"Aguja corta en 3 = 3 en punto!",ex:[3,0],hl:"hour",sm:false},
+        {t:"La hora exacta",d:"Cuando la aguja larga apunta al 12,\nes en punto.\nLa aguja corta dice que hora!",tip:"Larga en 12, corta en 7 = 7 en punto!",ex:[7,0],hl:"both",sm:true},
+        {t:"La aguja larga",d:"La aguja larga y fina es el minutero.\nNos dice cuantos minutos!\nEn el 12 significa 0 minutos.",tip:"La aguja larga es amiga de los minutos!",ex:[4,0],hl:"minute",sm:true},
+        {t:"30 minutos = Media!",d:"Cuando la aguja larga apunta al 6,\nson 30 minutos.\nSe dice y media!",tip:"Larga en 6 = 30 min! 9 y media!",ex:[9,30],hl:"minute",sm:true},
+        {t:"Contando de 5 en 5",d:"Entre cada numero grande hay 5 min.\n1=5, 2=10, 3=15...\n6=30, 9=45, 12=0!",tip:"Larga en 3 = 15 min! Son las 2:15!",ex:[2,15],hl:"both",sm:true},
+      ],
+      fr: [
+        {t:"La petite aiguille",d:"Une horloge a deux aiguilles.\nLa courte et epaisse: aiguille des heures.\nElle dit quelle heure il est !",tip:"Petite aiguille sur 3 = 3 heures !",ex:[3,0],hl:"hour",sm:false},
+        {t:"L heure pile",d:"Quand la grande aiguille pointe vers 12,\nc est l heure pile.\nLa petite aiguille dit quelle heure !",tip:"Grande en 12, petite en 7 = 7 heures !",ex:[7,0],hl:"both",sm:true},
+        {t:"La grande aiguille",d:"La longue et fine: aiguille des minutes.\nElle dit combien de minutes !\nSur le 12, c est 0 minute.",tip:"La grande aiguille: amie des minutes !",ex:[4,0],hl:"minute",sm:true},
+        {t:"30 minutes = Et demie !",d:"Quand la grande aiguille pointe vers 6,\nc est 30 minutes.\nOn dit et demie !",tip:"Grande en 6 = 30 min ! 9h30 !",ex:[9,30],hl:"minute",sm:true},
+        {t:"Compter par 5",d:"Entre chaque grand chiffre: 5 min.\n1=5, 2=10, 3=15...\n6=30, 9=45, 12=0 !",tip:"Grande en 3 = 15 min ! Il est 2h15 !",ex:[2,15],hl:"both",sm:true},
+      ],
+      de: [
+        {t:"Der kurze Zeiger",d:"Eine Uhr hat zwei Zeiger.\nDer kurze, dicke ist der Stundenzeiger.\nEr zeigt uns welche Stunde!",tip:"Kurzer Zeiger auf 3 = 3 Uhr!",ex:[3,0],hl:"hour",sm:false},
+        {t:"Volle Stunden",d:"Wenn der lange Zeiger auf 12 zeigt,\nist es eine volle Stunde.\nDer kurze Zeiger zeigt welche!",tip:"Lang auf 12, kurz auf 7 = 7 Uhr!",ex:[7,0],hl:"both",sm:true},
+        {t:"Der lange Zeiger",d:"Der lange, duenne ist der Minutenzeiger.\nEr zeigt wie viele Minuten!\nBei 12 sind es 0 Minuten.",tip:"Der lange Zeiger ist der Minutenfreund!",ex:[4,0],hl:"minute",sm:true},
+        {t:"30 Minuten = Halb!",d:"Wenn der lange Zeiger auf 6 zeigt,\nsind es 30 Minuten.\nMan sagt auch halb!",tip:"Lang auf 6 = 30 Min! Halb 10!",ex:[9,30],hl:"minute",sm:true},
+        {t:"In 5er-Schritten",d:"Zwischen den grossen Zahlen: 5 Min.\n1=5, 2=10, 3=15...\n6=30, 9=45, 12=0!",tip:"Lang auf 3 = 15 Min! Es ist 2:15!",ex:[2,15],hl:"both",sm:true},
+      ],
+      pt: [
+        {t:"O ponteiro curto",d:"Um relogio tem dois ponteiros.\nO curto e grosso: ponteiro das horas.\nEle diz que horas sao!",tip:"Ponteiro curto no 3 = 3 horas!",ex:[3,0],hl:"hour",sm:false},
+        {t:"Horas exatas",d:"Quando o ponteiro longo aponta para 12,\ne hora exata.\nO ponteiro curto diz qual hora!",tip:"Longo em 12, curto em 7 = 7 horas!",ex:[7,0],hl:"both",sm:true},
+        {t:"O ponteiro longo",d:"O ponteiro longo e fino: dos minutos.\nEle diz quantos minutos!\nNo 12 significa 0 minutos.",tip:"O ponteiro longo e amigo dos minutos!",ex:[4,0],hl:"minute",sm:true},
+        {t:"30 minutos = Meia!",d:"Quando o ponteiro longo aponta para 6,\nsao 30 minutos.\nDizemos e meia!",tip:"Longo em 6 = 30 min! 9 e meia!",ex:[9,30],hl:"minute",sm:true},
+        {t:"Contando de 5 em 5",d:"Entre cada numero grande: 5 minutos.\n1=5, 2=10, 3=15...\n6=30, 9=45, 12=0!",tip:"Longo em 3 = 15 min! Sao 2:15!",ex:[2,15],hl:"both",sm:true},
+      ],
+      hi: [
+        {t:"छोटी सुई",d:"घड़ी में दो सुइयाँ होती हैं।\nछोटी और मोटी घंटे की सुई है।\nयह बताती है कितने बजे!",tip:"छोटी सुई 3 पर = 3 बजे!",ex:[3,0],hl:"hour",sm:false},
+        {t:"पूरे घंटे",d:"जब बड़ी सुई 12 पर हो,\nतो पूरे घंटे बजे हैं।\nछोटी सुई बताती है कौन सा घंटा!",tip:"बड़ी →12, छोटी →7 = 7 बजे!",ex:[7,0],hl:"both",sm:true},
+        {t:"बड़ी सुई",d:"लंबी और पतली मिनट की सुई है।\nयह बताती है कितने मिनट!\n12 पर हो तो 0 मिनट।",tip:"बड़ी सुई मिनट की दोस्त!",ex:[4,0],hl:"minute",sm:true},
+        {t:"30 मिनट = आधा!",d:"जब बड़ी सुई 6 पर हो,\nतो 30 मिनट हैं।\nइसे साढ़े भी कहते हैं!",tip:"बड़ी →6 = 30 मि! साढ़े 9!",ex:[9,30],hl:"minute",sm:true},
+        {t:"5-5 करके गिनो",d:"हर बड़े नंबर के बीच 5 मिनट।\n1=5, 2=10, 3=15...\n6=30, 9=45, 12=0!",tip:"बड़ी →3 = 15 मि! 2 बजकर 15!",ex:[2,15],hl:"both",sm:true},
+      ],
+      ar: [
+        {t:"العقرب القصير",d:"الساعة فيها عقربان.\nالقصير والسميك هو عقرب الساعات.\nيخبرنا الساعة كم!",tip:"القصير على 3 = الساعة 3!",ex:[3,0],hl:"hour",sm:false},
+        {t:"الساعة بالضبط",d:"عندما يشير الطويل إلى 12\nتكون الساعة بالضبط.\nالقصير يقول أي ساعة!",tip:"الطويل →12, القصير →7 = 7!",ex:[7,0],hl:"both",sm:true},
+        {t:"العقرب الطويل",d:"الطويل والرفيع هو عقرب الدقائق.\nيخبرنا كم دقيقة!\nعلى 12 يعني 0 دقيقة.",tip:"الطويل صديق الدقائق!",ex:[4,0],hl:"minute",sm:true},
+        {t:"30 دقيقة = نصف!",d:"عندما يشير الطويل إلى 6\nتكون 30 دقيقة.\nnقول والنصف!",tip:"الطويل →6 = 30 دقيقة! 9 والنصف!",ex:[9,30],hl:"minute",sm:true},
+        {t:"العد بالخمسات",d:"بين كل رقم كبير 5 دقائق.\n1=5, 2=10, 3=15...\n6=30, 9=45, 12=0!",tip:"الطويل →3 = 15 دقيقة! الساعة 2:15!",ex:[2,15],hl:"both",sm:true},
+      ],
+    };
 
     var HC = "#FF6348", MC = "#3742FA", AC = "#FF9F43", SC = "#2ED573";
     function rand(a, b) { return a + Math.floor(Math.random() * (b - a + 1)); }
