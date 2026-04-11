@@ -127,7 +127,7 @@
       const calc = () => {
         const w = Math.min(window.innerWidth - 32, 600);
         const h = window.innerHeight;
-        const phoneMax = h < 750 ? h * 0.36 : h < 950 ? h * 0.4 : w;
+        const phoneMax = h < 750 ? h * 0.4 : h < 950 ? h * 0.45 : w;
         return Math.round(Math.min(w * (ratio || 0.92), phoneMax));
       };
       const [s, setS] = useState(calc);
@@ -338,7 +338,7 @@
     ];
 
     function QuizMode({ lang, onHome }) {
-      const clockSize = useClockSize(0.95);
+      const clockSize = useClockSize(1.0);
       const [lv, setLv] = useState(0);
       const [mode, setMode] = useState(null);
       const [q, setQ] = useState(null);
