@@ -122,6 +122,16 @@
     function aToM(a) { return Math.round((((a % 360) + 360) % 360) / 6) % 60; }
     function aToH(a) { let h = Math.round((((a % 360) + 360) % 360) / 30) % 12; return h === 0 ? 12 : h; }
 
+    function useClockSize(ratio) {
+      const [s, setS] = useState(() => Math.min(window.innerWidth - 32, 600) * (ratio || 0.92));
+      useEffect(() => {
+        const h = () => setS(Math.min(window.innerWidth - 32, 600) * (ratio || 0.92));
+        window.addEventListener("resize", h);
+        return () => window.removeEventListener("resize", h);
+      }, [ratio]);
+      return Math.round(s);
+    }
+
     function LangPicker({ lang, setLang }) {
       const [open, setOpen] = useState(false);
       const cur = LANGS.find(l => l.code === lang);
@@ -165,12 +175,12 @@
       );
     }
 
-    function Clock({ hour, minute, size = 260, showMin = true, hl = "both", drag = false, onChange, digital = true, fiveL = false, lang = "en" }) {
+    function Clock({ hour, minute, size = 300, showMin = true, hl = "both", drag = false, onChange, digital = true, fiveL = false, lang = "en" }) {
       const ref = useRef(null);
       const dRef = useRef(null);
       const prevMinRef = useRef(minute);
       const hourRef = useRef(hour);
-      const cx = size / 2, cy = size / 2, r = size * 0.42;
+      const cx = size / 2, cy = size / 2, r = size * 0.38;
       const hA = (hour % 12) * 30 + minute * 0.5, mA = minute * 6;
 
       useEffect(() => { prevMinRef.current = minute; }, [minute]);
@@ -229,7 +239,7 @@
             <line x1={cx} y1={cy} x2={x2} y2={y2} stroke={color} strokeWidth={w} strokeLinecap="round"
               opacity={dim ? 0.2 : 1} style={{ cursor: drag ? "grab" : "default", transition: drag ? "none" : "all 0.5s ease" }}
               onMouseDown={onS(id)} onTouchStart={onS(id)} />
-            {drag && <circle cx={x2} cy={y2} r={14} fill="transparent" style={{ cursor: "grab" }} onMouseDown={onS(id)} onTouchStart={onS(id)} />}
+            {drag && <circle cx={x2} cy={y2} r={24} fill="transparent" style={{ cursor: "grab" }} onMouseDown={onS(id)} onTouchStart={onS(id)} />}
           </g>
         );
       };
@@ -250,18 +260,18 @@
             })}
             {fiveL && Array.from({ length: 12 }).map((_, i) => {
               const n = i + 1, ms = (n * 5) % 60, rad = ((n * 30 - 90) * Math.PI) / 180;
-              return <text key={"m" + n} x={cx + Math.cos(rad) * (r + 2)} y={cy + Math.sin(rad) * (r + 2)} textAnchor="middle" dominantBaseline="central" fill={MC} fontSize={9} fontWeight="700" opacity={0.6}>{ms}</text>;
+              return <text key={"m" + n} x={cx + Math.cos(rad) * (r + 24)} y={cy + Math.sin(rad) * (r + 24)} textAnchor="middle" dominantBaseline="central" fill={MC} fontSize={size * 0.042} fontWeight="700" opacity={0.75}>{ms}</text>;
             })}
-            {showMin && hand(mA, r * 0.78, MC, 3.5, "minute")}
-            {hand(hA, r * 0.52, HC, 6, "hour")}
+            {showMin && hand(mA, r * 0.78, MC, 4.5, "minute")}
+            {hand(hA, r * 0.52, HC, 7.5, "hour")}
             <circle cx={cx} cy={cy} r={6} fill="#3d3027" />
             <circle cx={cx} cy={cy} r={3} fill="#fff" />
           </svg>
-          <div style={{ display: "flex", gap: 14, fontSize: 12 }}>
+          <div style={{ display: "flex", gap: 14, fontSize: 15, fontWeight: 600 }}>
             <span style={{ color: HC, fontWeight: 700 }}>● {tx("hourH", lang)}</span>
             {showMin && <span style={{ color: MC, fontWeight: 700 }}>● {tx("minH", lang)}</span>}
           </div>
-          {digital && <div style={{ background: "#1e272e", borderRadius: 14, padding: "10px 24px", fontFamily: "'Bagel Fat One', cursive", fontSize: 28, color: "#7bed9f", letterSpacing: 3, boxShadow: "inset 0 2px 8px rgba(0,0,0,0.5)", border: "3px solid #3d3027" }}>
+          {digital && <div style={{ background: "#1e272e", borderRadius: 16, padding: "12px 28px", fontFamily: "'Bagel Fat One', cursive", fontSize: 34, color: "#7bed9f", letterSpacing: 4, boxShadow: "inset 0 2px 8px rgba(0,0,0,0.5)", border: "3px solid #3d3027" }}>
             {String(hour).padStart(2, "0")} : {String(minute).padStart(2, "0")}
           </div>}
         </div>
@@ -270,6 +280,7 @@
 
     function LearnMode({ lang, onHome }) {
       const [step, setStep] = useState(0);
+      const clockSize = useClockSize(0.82);
       const lessons = LESSONS[lang] || LESSONS.en;
       const ls = lessons[step];
       return (
@@ -277,13 +288,13 @@
           <div style={{ display: "flex", gap: 6, justifyContent: "center", marginBottom: 20 }}>
             {lessons.map((_, i) => <div key={i} style={{ width: 36, height: 6, borderRadius: 3, background: i <= step ? AC : "#e0d6c8", transition: "all 0.3s" }} />)}
           </div>
-          <h2 style={{ fontFamily: "'Gaegu', cursive", fontSize: 26, color: "#3d3027", margin: "0 0 8px" }}>{ls.t}</h2>
-          <div style={{ background: "rgba(255,255,255,0.7)", borderRadius: 20, padding: "16px 20px", marginBottom: 16, border: "2px solid #f0ebe3" }}>
-            <p style={{ fontSize: 16, color: "#5a5049", lineHeight: 1.7, margin: 0, whiteSpace: "pre-line" }}>{ls.d}</p>
+          <h2 style={{ fontFamily: "'Gaegu', cursive", fontSize: 30, color: "#3d3027", margin: "0 0 8px" }}>{ls.t}</h2>
+          <div style={{ background: "rgba(255,255,255,0.7)", borderRadius: 20, padding: "18px 22px", marginBottom: 16, border: "2px solid #f0ebe3" }}>
+            <p style={{ fontSize: 19, color: "#5a5049", lineHeight: 1.8, margin: 0, whiteSpace: "pre-line" }}>{ls.d}</p>
           </div>
-          <Clock hour={ls.ex[0]} minute={ls.ex[1]} showMin={ls.sm} hl={ls.hl} fiveL={step >= 4} lang={lang} />
+          <Clock hour={ls.ex[0]} minute={ls.ex[1]} size={clockSize} showMin={ls.sm} hl={ls.hl} fiveL={step >= 4} lang={lang} />
           <div style={{ background: AC + "18", border: "2px dashed " + AC, borderRadius: 16, padding: "12px 16px", margin: "16px 0" }}>
-            <p style={{ fontSize: 15, color: HC, margin: 0, fontWeight: 700 }}>💡 {ls.tip}</p>
+            <p style={{ fontSize: 18, color: HC, margin: 0, fontWeight: 700 }}>💡 {ls.tip}</p>
           </div>
           <div style={{ display: "flex", gap: 12, justifyContent: "center" }}>
             {step > 0 && <Btn bg="#e0d6c8" c="#3d3027" onClick={() => setStep(s => s - 1)}>{tx("prev", lang)}</Btn>}
@@ -297,12 +308,13 @@
     function PlayMode({ lang, onHome }) {
       const [hour, setHour] = useState(12);
       const [minute, setMinute] = useState(0);
+      const clockSize = useClockSize(0.95);
       return (
         <div style={{ textAlign: "center", padding: "0 16px" }}>
-          <p style={{ fontSize: 16, color: "#5a5049", marginBottom: 16 }}>🖐️ {tx("drag", lang)}</p>
-          <Clock hour={hour} minute={minute} size={280} drag showMin onChange={(h, m) => { setHour(h); setMinute(m); }} fiveL lang={lang} />
+          <p style={{ fontSize: 20, color: "#5a5049", marginBottom: 16 }}>🖐️ {tx("drag", lang)}</p>
+          <Clock hour={hour} minute={minute} size={clockSize} drag showMin onChange={(h, m) => { setHour(h); setMinute(m); }} fiveL lang={lang} />
           <div style={{ marginTop: 16, background: "rgba(255,255,255,0.8)", borderRadius: 20, padding: "16px 24px", border: "2px solid #f0ebe3" }}>
-            <p style={{ fontSize: 22, fontFamily: "'Gaegu', cursive", fontWeight: 700, color: "#3d3027", margin: 0 }}>
+            <p style={{ fontSize: 28, fontFamily: "'Gaegu', cursive", fontWeight: 700, color: "#3d3027", margin: 0 }}>
               {fmtTime(hour, minute, lang)}
             </p>
           </div>
@@ -319,6 +331,7 @@
     ];
 
     function QuizMode({ lang, onHome }) {
+      const clockSize = useClockSize(0.88);
       const [lv, setLv] = useState(0);
       const [mode, setMode] = useState(null);
       const [q, setQ] = useState(null);
@@ -373,7 +386,7 @@
         <div style={{ textAlign: "center", padding: "0 16px" }}>
           <h2 style={{ fontFamily: "'Gaegu', cursive", fontSize: 26, color: "#3d3027", margin: "0 0 16px" }}>{tx("diff", lang)}</h2>
           <div style={{ display: "flex", gap: 8, justifyContent: "center", marginBottom: 24, flexWrap: "wrap" }}>
-            {lvLabels.map((lb, i) => <button key={i} onClick={() => setLv(i)} style={{ padding: "8px 18px", fontSize: 14, borderRadius: 30, fontWeight: 700, border: lv === i ? "3px solid " + AC : "3px solid #e0d6c8", background: lv === i ? AC + "20" : "#fff", color: lv === i ? AC : "#5a5049", cursor: "pointer" }}>{lb}</button>)}
+            {lvLabels.map((lb, i) => <button key={i} onClick={() => setLv(i)} style={{ padding: "10px 22px", fontSize: 17, borderRadius: 30, fontWeight: 700, border: lv === i ? "3px solid " + AC : "3px solid #e0d6c8", background: lv === i ? AC + "20" : "#fff", color: lv === i ? AC : "#5a5049", cursor: "pointer" }}>{lb}</button>)}
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 12, maxWidth: 280, margin: "0 auto" }}>
             <BigBtn bg={HC} onClick={() => { setMode("read"); setSc(0); setRd(0); }}>🔍 {tx("readQ", lang)}</BigBtn>
@@ -408,15 +421,15 @@
             <Badge l={tx("score", lang)} v={sc} c="#FECA57" />
             <Badge l={tx("qNum", lang)} v={(rd + 1) + "/" + total} c="#48DBFB" />
           </div>
-          <p style={{ fontSize: 18, fontFamily: "'Gaegu', cursive", fontWeight: 700, color: "#3d3027", marginBottom: 12 }}>{tx("whatTime", lang)} 🤔</p>
-          <Clock hour={q.h} minute={q.m} showMin digital={false} fiveL lang={lang} />
-          {fb !== null && <div style={{ fontSize: 24, margin: "12px 0" }}>{fb ? ("🎉 " + tx("correct", lang)) : ("😅 " + fmtTime(q.h, q.m, lang))}</div>}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, maxWidth: 300, margin: "12px auto 0" }}>
+          <p style={{ fontSize: 24, fontFamily: "'Gaegu', cursive", fontWeight: 700, color: "#3d3027", marginBottom: 12 }}>{tx("whatTime", lang)} 🤔</p>
+          <Clock hour={q.h} minute={q.m} size={clockSize} showMin digital={false} fiveL lang={lang} />
+          {fb !== null && <div style={{ fontSize: 28, margin: "12px 0" }}>{fb ? ("🎉 " + tx("correct", lang)) : ("😅 " + fmtTime(q.h, q.m, lang))}</div>}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, maxWidth: 360, margin: "16px auto 0" }}>
             {opts.map((op, i) => {
               const cor = fmtTime(q.h, q.m, lang);
               const isC = fb !== null && op === cor;
               const isW = fb !== null && op === sel && !fb;
-              return <button key={i} onClick={() => doRead(op)} style={{ padding: "14px 8px", fontSize: 16, fontWeight: 700, border: isC ? "3px solid " + SC : isW ? "3px solid #e17055" : "3px solid #f0ebe3", borderRadius: 16, cursor: fb !== null ? "default" : "pointer", background: isC ? SC + "20" : isW ? "#ffeaeb" : "#fff", color: "#3d3027", boxShadow: "0 3px 10px rgba(0,0,0,0.06)" }}>{op}</button>;
+              return <button key={i} onClick={() => doRead(op)} style={{ padding: "18px 12px", fontSize: 20, fontWeight: 700, border: isC ? "3px solid " + SC : isW ? "3px solid #e17055" : "3px solid #f0ebe3", borderRadius: 18, cursor: fb !== null ? "default" : "pointer", background: isC ? SC + "20" : isW ? "#ffeaeb" : "#fff", color: "#3d3027", boxShadow: "0 3px 10px rgba(0,0,0,0.06)" }}>{op}</button>;
             })}
           </div>
         </div>
@@ -428,30 +441,30 @@
             <Badge l={tx("score", lang)} v={sc} c="#FECA57" />
             <Badge l={tx("qNum", lang)} v={(rd + 1) + "/" + total} c="#48DBFB" />
           </div>
-          <div style={{ background: "#1e272e", borderRadius: 16, padding: "12px 28px", display: "inline-block", marginBottom: 12, border: "3px solid #3d3027" }}>
-            <span style={{ fontFamily: "'Bagel Fat One', cursive", fontSize: 26, color: "#7bed9f", letterSpacing: 2 }}>{fmtTime(q.h, q.m, lang)}</span>
+          <div style={{ background: "#1e272e", borderRadius: 16, padding: "14px 32px", display: "inline-block", marginBottom: 12, border: "3px solid #3d3027" }}>
+            <span style={{ fontFamily: "'Bagel Fat One', cursive", fontSize: 32, color: "#7bed9f", letterSpacing: 3 }}>{fmtTime(q.h, q.m, lang)}</span>
           </div>
-          <p style={{ fontSize: 15, color: "#5a5049", marginBottom: 12 }}>{tx("setTime", lang)}</p>
-          <Clock hour={sH} minute={sM} size={260} drag={!done} showMin onChange={(h, m) => { setSH(h); setSM(m); }} digital fiveL lang={lang} />
-          {fb !== null && <div style={{ fontSize: 24, margin: "12px 0" }}>{fb ? ("🎉 " + tx("correct", lang)) : ("😅 " + fmtTime(q.h, q.m, lang))}</div>}
+          <p style={{ fontSize: 18, color: "#5a5049", marginBottom: 12 }}>{tx("setTime", lang)}</p>
+          <Clock hour={sH} minute={sM} size={clockSize} drag={!done} showMin onChange={(h, m) => { setSH(h); setSM(m); }} digital fiveL lang={lang} />
+          {fb !== null && <div style={{ fontSize: 28, margin: "12px 0" }}>{fb ? ("🎉 " + tx("correct", lang)) : ("😅 " + fmtTime(q.h, q.m, lang))}</div>}
           {!done && <Btn bg={SC} c="#fff" onClick={doSet} style={{ marginTop: 12 }}>✅ {tx("submit", lang)}</Btn>}
         </div>
       );
     }
 
     function Badge({ l, v, c }) {
-      return <div style={{ background: "#fff", borderRadius: 14, padding: "6px 16px", border: "2px solid " + c, boxShadow: "0 3px 12px " + c + "30" }}>
-        <div style={{ fontSize: 11, color: "#888" }}>{l}</div>
-        <div style={{ fontSize: 20, fontFamily: "'Gaegu', cursive", fontWeight: 700, color: "#3d3027" }}>{v}</div>
+      return <div style={{ background: "#fff", borderRadius: 16, padding: "8px 20px", border: "2px solid " + c, boxShadow: "0 3px 12px " + c + "30" }}>
+        <div style={{ fontSize: 13, color: "#888" }}>{l}</div>
+        <div style={{ fontSize: 24, fontFamily: "'Gaegu', cursive", fontWeight: 700, color: "#3d3027" }}>{v}</div>
       </div>;
     }
 
     function Btn({ bg, c, onClick, children, style: s }) {
-      return <button onClick={onClick} style={{ padding: "12px 28px", fontSize: 16, fontWeight: 700, background: bg, color: c, border: "none", borderRadius: 50, cursor: "pointer", boxShadow: "0 4px 15px rgba(0,0,0,0.1)", ...s }}>{children}</button>;
+      return <button onClick={onClick} style={{ padding: "14px 32px", fontSize: 18, fontWeight: 700, background: bg, color: c, border: "none", borderRadius: 50, cursor: "pointer", boxShadow: "0 4px 15px rgba(0,0,0,0.1)", ...s }}>{children}</button>;
     }
 
     function BigBtn({ bg, onClick, children }) {
-      return <button onClick={onClick} style={{ padding: "18px 24px", fontSize: 18, fontWeight: 700, background: bg, color: "#fff", border: "none", borderRadius: 20, cursor: "pointer", boxShadow: "0 6px 20px " + bg + "40", textAlign: "center" }}>{children}</button>;
+      return <button onClick={onClick} style={{ padding: "20px 28px", fontSize: 20, fontWeight: 700, background: bg, color: "#fff", border: "none", borderRadius: 20, cursor: "pointer", boxShadow: "0 6px 20px " + bg + "40", textAlign: "center" }}>{children}</button>;
     }
 
     function LiveClock({ lang }) {
@@ -476,14 +489,14 @@
       return (
         <div style={{ minHeight: "100vh", background: "linear-gradient(170deg, #fef9ef 0%, #fdecd0 40%, #f8e8d6 100%)", position: "relative" }}>
           <LangPicker lang={lang} setLang={setLang} />
-          <div style={{ maxWidth: 420, margin: "0 auto", padding: "24px 16px", position: "relative", zIndex: 1 }}>
+          <div style={{ maxWidth: 620, margin: "0 auto", padding: "24px 20px", position: "relative", zIndex: 1 }}>
             {scr !== "home" && <button onClick={() => setScr("home")} style={{ background: "rgba(255,255,255,0.8)", border: "2px solid #e0d6c8", borderRadius: 50, width: 42, height: 42, fontSize: 18, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 3px 10px rgba(0,0,0,0.06)", marginBottom: 8 }}>←</button>}
             <div style={{ textAlign: "center", marginBottom: 20 }}>
               <div style={{ fontSize: 40, display: "inline-block" }}>🕰️</div>
-              <h1 style={{ fontFamily: "'Gaegu', cursive", fontSize: scr === "home" ? 32 : 24, color: "#3d3027", margin: "4px 0 0" }}>
+              <h1 style={{ fontFamily: "'Gaegu', cursive", fontSize: scr === "home" ? 38 : 28, color: "#3d3027", margin: "4px 0 0" }}>
                 {scr === "home" ? tx("appTitle", lang) : tx(scr, lang)}
               </h1>
-              {scr === "home" && <p style={{ color: "#8a7e72", fontSize: 15, margin: "4px 0 0" }}>{tx("sub", lang)} ✨</p>}
+              {scr === "home" && <p style={{ color: "#8a7e72", fontSize: 18, margin: "4px 0 0" }}>{tx("sub", lang)} ✨</p>}
             </div>
 
             {scr === "home" && (
@@ -496,8 +509,8 @@
                   }}>
                     <div style={{ fontSize: 36, width: 60, height: 60, display: "flex", alignItems: "center", justifyContent: "center", background: item.color + "12", borderRadius: 16, flexShrink: 0 }}>{item.emoji}</div>
                     <div>
-                      <div style={{ fontFamily: "'Gaegu', cursive", fontSize: 22, fontWeight: 700, color: "#3d3027" }}>{tx(item.tk, lang)}</div>
-                      <div style={{ fontSize: 14, color: "#8a7e72", marginTop: 2 }}>{tx(item.dk, lang)}</div>
+                      <div style={{ fontFamily: "'Gaegu', cursive", fontSize: 26, fontWeight: 700, color: "#3d3027" }}>{tx(item.tk, lang)}</div>
+                      <div style={{ fontSize: 16, color: "#8a7e72", marginTop: 2 }}>{tx(item.dk, lang)}</div>
                     </div>
                     <div style={{ marginLeft: "auto", fontSize: 20, color: "#ccc" }}>▶</div>
                   </button>
