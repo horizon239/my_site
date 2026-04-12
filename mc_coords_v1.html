@@ -670,26 +670,42 @@ var I18N={
 // 데이터 구조: { worlds: [{id,name,coords:[...]}], activeWorldId: "..." }
 function genId(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
 
+// localStorage 데이터 검증 후 로드
+function validateWorld(w){
+  if(!w||typeof w!=='object')return null;
+  return{
+    id:typeof w.id==='string'?w.id.slice(0,20):genId(),
+    name:typeof w.name==='string'?w.name.slice(0,50):'World',
+    coords:Array.isArray(w.coords)?w.coords.map(sanitizeCoordObj).filter(Boolean):[]
+  };
+}
+
 function loadData(){
   try{
     var raw=localStorage.getItem('mc-data');
     if(raw){
+      if(raw.length>5*1024*1024)throw new Error('too large');
       var d=JSON.parse(raw);
-      if(d.worlds&&d.worlds.length)return d;
+      if(d.worlds&&Array.isArray(d.worlds)&&d.worlds.length){
+        var safeWorlds=d.worlds.map(validateWorld).filter(Boolean);
+        if(safeWorlds.length){
+          var aid=typeof d.activeWorldId==='string'?d.activeWorldId:safeWorlds[0].id;
+          return{worlds:safeWorlds,activeWorldId:aid};
+        }
+      }
     }
     // 기존 mc-coords 데이터 마이그레이션
     var old=localStorage.getItem('mc-coords');
     if(old){
       var coords=JSON.parse(old);
       if(Array.isArray(coords)&&coords.length){
-        var w={id:genId(),name:'World 1',coords:coords};
-        return {worlds:[w],activeWorldId:w.id};
+        var w={id:genId(),name:'World 1',coords:coords.map(sanitizeCoordObj).filter(Boolean)};
+        return{worlds:[w],activeWorldId:w.id};
       }
     }
   }catch(e){}
-  // 기본: 빈 월드 1개
   var w={id:genId(),name:'World 1',coords:[]};
-  return {worlds:[w],activeWorldId:w.id};
+  return{worlds:[w],activeWorldId:w.id};
 }
 
 var data=loadData();
@@ -958,13 +974,15 @@ function render(){
 }
 
 /* ========== CRUD ========== */
+function sanitizeCoord(v){var n=parseInt(v,10);return isNaN(n)?0:n}
+
 function saveEntry(){
   var x=document.getElementById('ix').value;
   var y=document.getElementById('iy').value;
   var z=document.getElementById('iz').value;
   if(!x&&!y&&!z){showToast(tx('toastEmpty'));return}
   getCoords().push({
-    x:x||'0',y:y||'0',z:z||'0',
+    x:sanitizeCoord(x),y:sanitizeCoord(y),z:sanitizeCoord(z),
     dim:curDim,
     memo:document.getElementById('imemo').value,
     time:new Date().toISOString()
@@ -997,9 +1015,24 @@ function exportJSON(){
   showToast(tx('toastExported'));
 }
 
+// 임포트된 좌표 데이터를 안전하게 정제
+function sanitizeCoordObj(item){
+  var validDims=['overworld','nether','end'];
+  return{
+    x:sanitizeCoord(item.x),
+    y:sanitizeCoord(item.y),
+    z:sanitizeCoord(item.z),
+    dim:validDims.indexOf(String(item.dim))>=0?String(item.dim):'overworld',
+    memo:item.memo?String(item.memo).slice(0,200):'',
+    time:item.time&&!isNaN(Date.parse(item.time))?String(item.time):new Date().toISOString()
+  };
+}
+
 function importJSON(event){
   var file=event.target.files[0];
   if(!file)return;
+  // 파일 크기 제한 (5MB)
+  if(file.size>5*1024*1024){showToast(tx('toastImportFail'));return}
   var reader=new FileReader();
   reader.onload=function(e){
     try{
@@ -1008,12 +1041,15 @@ function importJSON(event){
       if(parsed.worlds&&Array.isArray(parsed.worlds)){
         parsed.worlds.forEach(function(w){
           if(!w.coords||!Array.isArray(w.coords))return;
-          var existing=data.worlds.find(function(ew){return ew.name===w.name});
+          var safeName=w.name?String(w.name).slice(0,50):'Imported';
+          var safeCoords=w.coords
+            .filter(function(c){return c.x!==undefined&&c.y!==undefined&&c.z!==undefined})
+            .map(sanitizeCoordObj);
+          var existing=data.worlds.find(function(ew){return ew.name===safeName});
           if(existing){
-            w.coords.forEach(function(c){existing.coords.push(c)});
+            safeCoords.forEach(function(c){existing.coords.push(c)});
           }else{
-            w.id=genId();
-            data.worlds.push(w);
+            data.worlds.push({id:genId(),name:safeName,coords:safeCoords});
           }
         });
       }
@@ -1021,9 +1057,7 @@ function importJSON(event){
       else if(Array.isArray(parsed)){
         parsed.forEach(function(item){
           if(item.x!==undefined&&item.y!==undefined&&item.z!==undefined){
-            if(!item.dim)item.dim='overworld';
-            if(!item.time)item.time=new Date().toISOString();
-            getCoords().push(item);
+            getCoords().push(sanitizeCoordObj(item));
           }
         });
       }
