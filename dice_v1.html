@@ -87,7 +87,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Noto S
 
 <div class="app">
   <a class="home-btn" href="index.html">← <span id="txtHome">홈으로</span></a>
-  <div class="header"><h1 id="txtTitle">주사위 굴리기</h1></div>
+  <div class="header"><h1 id="txtTitle">주사위 던지기</h1></div>
   <p class="header-sub" id="txtSub">주사위를 잡고 흔든 뒤 던져보세요!</p>
 
   <div class="count-row">
@@ -122,12 +122,12 @@ var I18N={
   hint:{ko:"꾹 누르고 드래그하면 세게 던져져요",en:"Hold and drag to throw harder",ja:"長押し＆ドラッグで強く投げよう",zh:"长按拖动可以用力投",es:"Mantén y arrastra para lanzar fuerte",fr:"Maintenez et glissez pour lancer fort",de:"Halten und ziehen für stärkeren Wurf",pt:"Segure e arraste para jogar forte",hi:"दबाकर खींचें, ज़ोर से फेंकें",ar:"اضغط واسحب للرمي بقوة"},
   total:{ko:"합계",en:"Total",ja:"合計",zh:"总计",es:"Total",fr:"Total",de:"Gesamt",pt:"Total",hi:"कुल",ar:"المجموع"},
   history:{ko:"기록",en:"History",ja:"履歴",zh:"历史",es:"Historial",fr:"Historique",de:"Verlauf",pt:"Histórico",hi:"इतिहास",ar:"السجل"},
-  title:{ko:"주사위 굴리기",en:"Dice Roller",ja:"ダイスローラー",zh:"掷骰子",es:"Lanzar Dados",fr:"Lanceur de Dés",de:"Würfelwerfer",pt:"Rolar Dados",hi:"पासा फेंको",ar:"رمي النرد"},
+  title:{ko:"주사위 던지기",en:"Dice Roller",ja:"ダイスローラー",zh:"掷骰子",es:"Lanzar Dados",fr:"Lanceur de Dés",de:"Würfelwerfer",pt:"Rolar Dados",hi:"पासा फेंको",ar:"رمي النرد"},
   clearHist:{ko:"초기화",en:"Clear",ja:"クリア",zh:"清除",es:"Borrar",fr:"Effacer",de:"Löschen",pt:"Limpar",hi:"साफ़ करें",ar:"مسح"}
 };
 var curLang='ko';
 function tx(k){var m=I18N[k];if(!m)return k;return m[curLang]||m.en||k}
-function getSavedLang(){try{return localStorage.getItem('lang')||'ko'}catch(e){return'ko'}}
+function getSavedLang(){try{return localStorage.getItem('lang')||'en'}catch(e){return'en'}}
 function saveLang(c){try{localStorage.setItem('lang',c)}catch(e){}}
 function applyLang(code){
   curLang=code;var l=LANGS.find(function(x){return x.code===code});if(!l)return;

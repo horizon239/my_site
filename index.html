@@ -355,25 +355,25 @@
       <a class="card" href="clock_adv_v1.html">
         <span class="card-tag" id="clockTag">Learning · Game</span>
         <div class="card-icon">🕰️</div>
-        <div class="card-title">Clock Adventure</div>
+        <div class="card-title" id="clockTitle">Clock Adventure</div>
         <p class="card-desc" id="clockDesc">시침과 분침을 배우고, 직접 돌려보고, 퀴즈까지.<br>아이와 함께 즐기는 시계 학습 앱.</p>
         <div class="card-arrow" id="clockEnter">Enter</div>
       </a>
 
-      <!-- 마크 좌표 기록장 -->
+      <!-- 마인크래프트 좌표 -->
       <a class="card" href="mc_coords_v1.html">
         <span class="card-tag" id="coordTag">Tool · Game</span>
         <div class="card-icon">⛏️</div>
-        <div class="card-title">MC Coordinates</div>
+        <div class="card-title" id="coordTitle">MC Coordinates</div>
         <p class="card-desc" id="coordDesc">마인크래프트 좌표를 기록하고 관리하세요.<br>오버월드, 네더, 엔드 차원별 정리.</p>
         <div class="card-arrow" id="coordEnter">Enter</div>
       </a>
 
-      <!-- 주사위 굴리기 -->
+      <!-- 주사위 던지기 -->
       <a class="card" href="dice_v1.html">
         <span class="card-tag" id="diceTag">Tool · Game</span>
         <div class="card-icon">🎲</div>
-        <div class="card-title">Dice Roller</div>
+        <div class="card-title" id="diceTitle">Dice Roller</div>
         <p class="card-desc" id="diceDesc">입체 3D 주사위를 굴려보세요.<br>보드게임에 주사위가 없을 때 유용!</p>
         <div class="card-arrow" id="diceEnter">Enter</div>
       </a>
@@ -480,10 +480,25 @@
         es: "Entrar", fr: "Entrer", de: "Starten", pt: "Entrar",
         hi: "शुरू करें", ar: "ادخل",
       },
+      clockTitle: {
+        ko: "시계 모험", en: "Clock Adventure", ja: "時計アドベンチャー", zh: "时钟冒险",
+        es: "Aventura del Reloj", fr: "Aventure Horloge", de: "Uhr-Abenteuer",
+        pt: "Aventura do Relógio", hi: "घड़ी का सफ़र", ar: "مغامرة الساعة",
+      },
+      coordTitle: {
+        ko: "마인크래프트 좌표", en: "MC Coordinates", ja: "MC座標メモ", zh: "MC坐标记录",
+        es: "Coordenadas MC", fr: "Coordonnées MC", de: "MC-Koordinaten",
+        pt: "Coordenadas MC", hi: "MC निर्देशांक", ar: "إحداثيات MC",
+      },
+      diceTitle: {
+        ko: "주사위 던지기", en: "Dice Roller", ja: "ダイスローラー", zh: "掷骰子",
+        es: "Lanzar Dados", fr: "Lanceur de Dés", de: "Würfelwerfer",
+        pt: "Rolar Dados", hi: "पासा फेंको", ar: "رمي النرد",
+      },
     };
 
     function getSavedLang() {
-      try { return localStorage.getItem('lang') || 'ko'; } catch(e) { return 'ko'; }
+      try { return localStorage.getItem('lang') || 'en'; } catch(e) { return 'en'; }
     }
 
     function saveLang(code) {
@@ -502,7 +517,7 @@
       document.getElementById('langName').textContent = l.name;
 
       // 텍스트 업데이트
-      ['subtitle','section','clockTag','clockEnter','coordTag','coordEnter','diceTag','diceEnter'].forEach(function(key) {
+      ['subtitle','section','clockTag','clockEnter','coordTag','coordEnter','diceTag','diceEnter','clockTitle','coordTitle','diceTitle'].forEach(function(key) {
         var el = document.getElementById('txt' + key.charAt(0).toUpperCase() + key.slice(1)) ||
                  document.getElementById(key);
         if (el) el.innerHTML = tx(key, code);

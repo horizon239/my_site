@@ -6,9 +6,9 @@
   <title>Clock Adventure</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&family=Bagel+Fat+One&family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
-  <script src="https://unpkg.com/react@18/umd/react.production.min.js" integrity="sha384-MhvFknC0AhqKZXwSCyPeIirpE1IhTafmLXTvTCai5pxjAqFcqEAAqKH/2lXrFVPn" crossorigin="anonymous"></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" integrity="sha384-VQePqH/QE94Buf4g/4MI5NrqDYjdqT7JW6KzhieQUlw6w7U7VD59fPqCAunpXEu6" crossorigin="anonymous"></script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js" integrity="sha384-RtnJVik7wuedvaD33OAmqud3NpHYg9cC7fusyNSj4XOXRJnBWGONH1Q5bJ4xuJXZ" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js" integrity="sha384-DGyLxAyjq0f9SPpVevD6IgztCFlnMF6oW/XQGmfe+IsZ8TqEiDrcHkMLKI6fiB/Z" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js" integrity="sha384-gTGxhz21lVGYNMcdJOyq01Edg0jhn/c22nsx0kyqP0TxaV5WVdsSH1fSDUf5YJj1" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.2/babel.min.js" integrity="sha384-dqDn4UOhYWNxmtwnMX6yC3WtZZ6Li8rF6rLB7cu0i/R7btvb+p+kObgEHto7VsJK" crossorigin="anonymous"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: 'Noto Sans KR', sans-serif; }
@@ -417,7 +417,7 @@
     }
 
     function App() {
-      var lang = useState(function() { try { return localStorage.getItem('lang') || 'ko'; } catch(e) { return 'ko'; } })[0];
+      var lang = useState(function() { try { return localStorage.getItem('lang') || 'en'; } catch(e) { return 'en'; } })[0];
       var _s = useState("home"), scr = _s[0], setScr = _s[1];
       var menus = [
         { id: "learn", emoji: "📖", tk: "learn", dk: "learnD", color: HC },
