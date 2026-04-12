@@ -68,8 +68,6 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Noto S
 .history-chip{padding:5px 12px;background:var(--surface);border:1px solid var(--border);border-radius:3px;font-size:12px;color:#666;font-family:'Bebas Neue',sans-serif;letter-spacing:0.08em}
 .history-chip .chip-sum{color:var(--accent);margin-left:4px}
 
-.sound-toggle{position:fixed;top:20px;left:20px;z-index:10;width:36px;height:36px;border:1px solid rgba(255,255,255,0.1);border-radius:3px;background:rgba(255,255,255,0.04);cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;transition:border-color 0.2s;color:#888}
-.sound-toggle:hover{border-color:rgba(200,169,110,0.4)}
 
 @media(max-width:500px){
   .app{padding:8px 8px 24px}
@@ -80,7 +78,6 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Noto S
 </head>
 <body>
 
-<button class="sound-toggle" id="soundToggle" onclick="toggleSound()">🔊</button>
 <div class="lang-picker" id="langPicker">
   <button class="lang-btn" onclick="toggleLangDD()">
     <span class="lang-flag" id="langFlag">🇰🇷</span><span id="langName">한국어</span><span class="lang-arrow" id="langArrow">▼</span>
@@ -156,7 +153,6 @@ document.addEventListener('click',function(e){if(!document.getElementById('langP
 /* ===== 사운드 ===== */
 var soundOn=true,audioCtx=null;
 function getCtx(){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext);return audioCtx}
-function toggleSound(){soundOn=!soundOn;document.getElementById('soundToggle').textContent=soundOn?'🔊':'🔇'}
 function playImpact(vol){
   if(!soundOn)return;var ctx=getCtx(),now=ctx.currentTime,len=0.04;
   var buf=ctx.createBuffer(1,ctx.sampleRate*len|0,ctx.sampleRate),d=buf.getChannelData(0);
