@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Dice Roller</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Bebas+Neue&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cannon.js/0.6.2/cannon.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0a0a0a;--surface:#111113;--border:rgba(255,255,255,0.07);--text:#e8e4dc;--muted:#555;--accent:#c8a96e;--accent-dim:rgba(200,169,110,0.15)}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-serif;font-weight:300;overflow-x:hidden}
+
+.app{position:relative;z-index:1;max-width:900px;margin:0 auto;padding:24px 20px 40px;min-height:100vh;display:flex;flex-direction:column;align-items:center}
+.home-btn{display:inline-flex;align-items:center;gap:6px;align-self:flex-start;font-size:12px;letter-spacing:0.15em;color:#555;text-decoration:none;margin-bottom:20px;transition:color 0.2s}
+.home-btn:hover{color:var(--accent)}
+.header{text-align:center;margin-bottom:6px}
+.header h1{font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:0.12em;color:var(--text);line-height:1}
+.header-sub{font-size:12px;color:#555;margin-bottom:20px;letter-spacing:0.05em;text-align:center}
+
+.lang-picker{position:fixed;top:20px;right:20px;z-index:10}
+.lang-btn{display:flex;align-items:center;gap:7px;padding:7px 13px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:3px;cursor:pointer;color:#888;font-family:'Noto Sans KR',sans-serif;font-size:12px;letter-spacing:0.05em;transition:border-color 0.2s,color 0.2s}
+.lang-btn:hover{border-color:rgba(200,169,110,0.4);color:var(--text)}
+.lang-flag{font-size:16px}.lang-arrow{font-size:9px;opacity:0.5}
+.lang-dropdown{display:none;position:absolute;top:calc(100% + 6px);right:0;background:#111113;border:1px solid rgba(255,255,255,0.1);border-radius:3px;min-width:160px;max-height:320px;overflow-y:auto;box-shadow:0 12px 40px rgba(0,0,0,0.6)}
+.lang-dropdown.open{display:block}
+.lang-option{display:flex;align-items:center;gap:10px;width:100%;padding:10px 14px;border:none;background:transparent;cursor:pointer;color:#666;font-size:13px;text-align:left;font-family:'Noto Sans KR',sans-serif;transition:background 0.15s,color 0.15s}
+.lang-option:hover{background:rgba(255,255,255,0.04);color:var(--text)}
+.lang-option.active{color:var(--accent)}
+.lang-check{margin-left:auto;font-size:10px;color:var(--accent)}
+
+.count-row{display:flex;gap:8px;margin-bottom:16px}
+.count-btn{width:48px;height:48px;border:1px solid var(--border);border-radius:6px;background:transparent;color:#555;font-size:18px;font-weight:500;cursor:pointer;font-family:'Bebas Neue',sans-serif;transition:all 0.2s;display:flex;align-items:center;justify-content:center}
+.count-btn.active{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+.count-btn:hover:not(.active){border-color:rgba(255,255,255,0.15);color:#888}
+
+#canvas-wrap{width:100%;max-width:100%;aspect-ratio:4/3;border-radius:8px;margin-bottom:12px;position:relative;touch-action:none}
+#canvas-wrap canvas{display:block;width:100%;height:100%;cursor:grab}
+#canvas-wrap canvas:active{cursor:grabbing}
+
+.drag-hint{
+  font-size:12px;color:#444;text-align:center;margin-bottom:16px;
+  letter-spacing:0.05em;transition:opacity 0.3s
+}
+.drag-hint span{color:var(--accent);font-weight:400}
+
+.result{text-align:center;margin-bottom:12px;min-height:60px;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.result-numbers{font-family:'Bebas Neue',sans-serif;font-size:56px;letter-spacing:0.08em;color:var(--accent);line-height:1;opacity:0;transform:scale(0.5);transition:opacity 0.4s,transform 0.4s cubic-bezier(0.2,1.2,0.4,1)}
+.result-numbers.show{opacity:1;transform:scale(1)}
+.result-total{font-size:13px;color:#555;margin-top:6px;letter-spacing:0.1em;opacity:0;transition:opacity 0.4s 0.15s}
+.result-total.show{opacity:1}
+
+.history{margin-top:8px;width:100%;max-width:400px}
+.history-label{font-size:10px;color:var(--muted);letter-spacing:0.2em;text-transform:uppercase;margin-bottom:10px;font-weight:500}
+.history-list{display:flex;flex-wrap:wrap;gap:6px}
+.history-chip{padding:5px 12px;background:var(--surface);border:1px solid var(--border);border-radius:3px;font-size:12px;color:#666;font-family:'Bebas Neue',sans-serif;letter-spacing:0.08em}
+.history-chip .chip-sum{color:var(--accent);margin-left:4px}
+
+.sound-toggle{position:fixed;top:20px;left:20px;z-index:10;width:36px;height:36px;border:1px solid rgba(255,255,255,0.1);border-radius:3px;background:rgba(255,255,255,0.04);cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;transition:border-color 0.2s;color:#888}
+.sound-toggle:hover{border-color:rgba(200,169,110,0.4)}
+
+@media(max-width:500px){
+  .app{padding:8px 8px 24px}
+  .header h1{font-size:30px}
+  .result-numbers{font-size:44px}
+}
+</style>
+</head>
+<body>
+
+<button class="sound-toggle" id="soundToggle" onclick="toggleSound()">🔊</button>
+<div class="lang-picker" id="langPicker">
+  <button class="lang-btn" onclick="toggleLangDD()">
+    <span class="lang-flag" id="langFlag">🇰🇷</span><span id="langName">한국어</span><span class="lang-arrow" id="langArrow">▼</span>
+  </button>
+  <div class="lang-dropdown" id="langDropdown"></div>
+</div>
+
+<div class="app">
+  <a class="home-btn" href="index.html">← <span id="txtHome">홈으로</span></a>
+  <div class="header"><h1 id="txtTitle">주사위 굴리기</h1></div>
+  <p class="header-sub" id="txtSub">주사위를 잡고 흔든 뒤 던져보세요!</p>
+
+  <div class="count-row">
+    <button class="count-btn active" onclick="setCount(1,this)">1</button>
+    <button class="count-btn" onclick="setCount(2,this)">2</button>
+    <button class="count-btn" onclick="setCount(3,this)">3</button>
+    <button class="count-btn" onclick="setCount(4,this)">4</button>
+    <button class="count-btn" onclick="setCount(5,this)">5</button>
+  </div>
+
+  <div id="canvas-wrap"></div>
+  <div class="drag-hint" id="dragHint"><span id="txtHint">주사위를 터치해서 흔들고 놓으세요</span></div>
+
+  <div class="result">
+    <div class="result-numbers" id="resultNum"></div>
+    <div class="result-total" id="resultTotal"></div>
+  </div>
+
+  <div class="history">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <div class="history-label" id="lblHistory" style="margin-bottom:0">기록</div>
+      <button id="btnClearHist" onclick="clearHistory()" style="font-size:11px;color:#c85e5e;background:none;border:none;cursor:pointer;font-family:'Noto Sans KR',sans-serif;opacity:0.6;transition:opacity 0.2s" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.6">초기화</button>
+    </div>
+    <div class="history-list" id="historyList"></div>
+  </div>
+</div>
+
+<script>
+/* ===== 언어 ===== */
+var LANGS=[{code:"ko",name:"한국어",flag:"🇰🇷"},{code:"en",name:"English",flag:"🇺🇸"},{code:"ja",name:"日本語",flag:"🇯🇵"},{code:"zh",name:"中文",flag:"🇨🇳"},{code:"es",name:"Español",flag:"🇪🇸"},{code:"fr",name:"Français",flag:"🇫🇷"},{code:"de",name:"Deutsch",flag:"🇩🇪"},{code:"pt",name:"Português",flag:"🇧🇷"},{code:"hi",name:"हिन्दी",flag:"🇮🇳"},{code:"ar",name:"العربية",flag:"🇸🇦"}];
+var I18N={
+  home:{ko:"홈으로",en:"Home",ja:"ホームへ",zh:"返回首页",es:"Inicio",fr:"Accueil",de:"Startseite",pt:"Início",hi:"होम",ar:"الرئيسية"},
+  sub:{ko:"주사위를 잡고 흔든 뒤 던져보세요!",en:"Grab, shake, and throw the dice!",ja:"サイコロを掴んで振って投げよう！",zh:"抓住骰子摇一摇再扔出去！",es:"¡Agarra, agita y lanza los dados!",fr:"Attrapez, secouez et lancez !",de:"Greifen, schütteln und werfen!",pt:"Pegue, sacuda e jogue!",hi:"पासा पकड़ें, हिलाएं और फेंकें!",ar:"أمسك النرد وحركه ثم ارمِه!"},
+  hint:{ko:"주사위를 터치해서 흔들고 놓으세요",en:"Touch the dice, shake and release",ja:"サイコロをタッチして振って離そう",zh:"触摸骰子，摇晃后松开",es:"Toca, agita y suelta los dados",fr:"Touchez, secouez et relâchez",de:"Berühren, schütteln und loslassen",pt:"Toque, sacuda e solte os dados",hi:"पासा छुएं, हिलाएं और छोड़ें",ar:"المس النرد، حركه ثم أفلته"},
+  total:{ko:"합계",en:"Total",ja:"合計",zh:"总计",es:"Total",fr:"Total",de:"Gesamt",pt:"Total",hi:"कुल",ar:"المجموع"},
+  history:{ko:"기록",en:"History",ja:"履歴",zh:"历史",es:"Historial",fr:"Historique",de:"Verlauf",pt:"Histórico",hi:"इतिहास",ar:"السجل"},
+  title:{ko:"주사위 굴리기",en:"Dice Roller",ja:"ダイスローラー",zh:"掷骰子",es:"Lanzar Dados",fr:"Lanceur de Dés",de:"Würfelwerfer",pt:"Rolar Dados",hi:"पासा फेंको",ar:"رمي النرد"},
+  clearHist:{ko:"초기화",en:"Clear",ja:"クリア",zh:"清除",es:"Borrar",fr:"Effacer",de:"Löschen",pt:"Limpar",hi:"साफ़ करें",ar:"مسح"}
+};
+var curLang='ko';
+function tx(k){var m=I18N[k];if(!m)return k;return m[curLang]||m.en||k}
+function getSavedLang(){try{return localStorage.getItem('lang')||'ko'}catch(e){return'ko'}}
+function saveLang(c){try{localStorage.setItem('lang',c)}catch(e){}}
+function applyLang(code){
+  curLang=code;var l=LANGS.find(function(x){return x.code===code});if(!l)return;
+  document.getElementById('langFlag').textContent=l.flag;
+  document.getElementById('langName').textContent=l.name;
+  document.getElementById('txtHome').textContent=tx('home');
+  document.getElementById('txtSub').textContent=tx('sub');
+  document.getElementById('txtHint').textContent=tx('hint');
+  document.getElementById('lblHistory').textContent=tx('history');
+  document.getElementById('txtTitle').textContent=tx('title');
+  document.getElementById('btnClearHist').textContent=tx('clearHist');
+  document.querySelectorAll('.lang-option').forEach(function(b){
+    var a=b.dataset.code===code;b.classList.toggle('active',a);
+    var c=b.querySelector('.lang-check');if(c)c.style.display=a?'inline':'none';
+  });saveLang(code);
+}
+function toggleLangDD(){var d=document.getElementById('langDropdown');d.classList.toggle('open');document.getElementById('langArrow').textContent=d.classList.contains('open')?'▲':'▼'}
+function closeLangDD(){document.getElementById('langDropdown').classList.remove('open');document.getElementById('langArrow').textContent='▼'}
+var dd=document.getElementById('langDropdown');
+LANGS.forEach(function(l){var b=document.createElement('button');b.className='lang-option';b.dataset.code=l.code;b.innerHTML='<span>'+l.flag+'</span><span>'+l.name+'</span><span class="lang-check">✓</span>';b.onclick=function(){applyLang(l.code);closeLangDD()};dd.appendChild(b)});
+document.addEventListener('click',function(e){if(!document.getElementById('langPicker').contains(e.target))closeLangDD()});
+
+/* ===== 사운드 ===== */
+var soundOn=true,audioCtx=null;
+function getCtx(){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext);return audioCtx}
+function toggleSound(){soundOn=!soundOn;document.getElementById('soundToggle').textContent=soundOn?'🔊':'🔇'}
+function playImpact(vol){
+  if(!soundOn)return;var ctx=getCtx(),now=ctx.currentTime,len=0.04;
+  var buf=ctx.createBuffer(1,ctx.sampleRate*len|0,ctx.sampleRate),d=buf.getChannelData(0);
+  for(var i=0;i<d.length;i++){var t=i/d.length;d[i]=(Math.random()*2-1)*Math.pow(1-t,5)}
+  var s=ctx.createBufferSource();s.buffer=buf;
+  var f=ctx.createBiquadFilter();f.type='bandpass';f.frequency.value=900+Math.random()*800;f.Q.value=1.5;
+  var g=ctx.createGain();g.gain.setValueAtTime(Math.min(vol||0.25,0.5),now);g.gain.exponentialRampToValueAtTime(0.001,now+len);
+  s.connect(f);f.connect(g);g.connect(ctx.destination);s.start(now);s.stop(now+len);
+}
+function playRumble(){
+  if(!soundOn)return;var ctx=getCtx(),now=ctx.currentTime,len=0.8;
+  var buf=ctx.createBuffer(1,ctx.sampleRate*len|0,ctx.sampleRate),d=buf.getChannelData(0);
+  for(var i=0;i<d.length;i++){var t=i/d.length;d[i]=(Math.random()*2-1)*Math.sin(t*Math.PI)*(1-t)*0.06}
+  var s=ctx.createBufferSource();s.buffer=buf;
+  var f=ctx.createBiquadFilter();f.type='lowpass';f.frequency.value=300;
+  var g=ctx.createGain();g.gain.setValueAtTime(0.15,now);
+  s.connect(f);f.connect(g);g.connect(ctx.destination);s.start(now);s.stop(now+len);
+}
+
+/* ===== THREE.js 씬 ===== */
+var wrap=document.getElementById('canvas-wrap');
+var W=wrap.offsetWidth,H=Math.round(W*0.75);
+var renderer=new THREE.WebGLRenderer({antialias:true,alpha:false});
+renderer.setSize(W,H);renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+renderer.setClearColor(0x0d0a06);
+wrap.appendChild(renderer.domElement);
+var canvas=renderer.domElement;
+
+var scene=new THREE.Scene();
+var camera=new THREE.PerspectiveCamera(45,W/H,0.1,100);
+// 테이블에 앉아서 비스듬히 내려다보는 시점
+camera.position.set(0,10,10);
+camera.lookAt(0,0,-1);
+
+// ── 조명 — 따뜻한 실내 카지노 ──
+scene.add(new THREE.AmbientLight(0xfff0e0,0.35));
+var dirL=new THREE.DirectionalLight(0xfff6ee,1.0);
+dirL.position.set(5,14,6);dirL.castShadow=true;
+dirL.shadow.mapSize.set(2048,2048);
+dirL.shadow.camera.left=-8;dirL.shadow.camera.right=8;
+dirL.shadow.camera.top=8;dirL.shadow.camera.bottom=-8;
+dirL.shadow.camera.near=1;dirL.shadow.camera.far=30;
+dirL.shadow.bias=-0.001;
+dirL.shadow.radius=4; // 부드러운 그림자
+scene.add(dirL);
+// 역광
+var backL=new THREE.DirectionalLight(0x8090b0,0.15);backL.position.set(-4,6,-8);scene.add(backL);
+// 테이블 위 따뜻한 스팟
+var spotL=new THREE.SpotLight(0xffe8c8,0.5,30,Math.PI/4,0.7,1.5);
+spotL.position.set(0,12,3);spotL.target.position.set(0,0,-1);
+scene.add(spotL);scene.add(spotL.target);
+
+// ── 테이블 ──
+var TW=12,TH=9;
+
+// 배경 바닥
+var bgFloor=new THREE.Mesh(
+  new THREE.PlaneGeometry(50,50),
+  new THREE.MeshStandardMaterial({color:0x040303,roughness:0.95})
+);
+bgFloor.rotation.x=-Math.PI/2;bgFloor.position.y=-0.15;scene.add(bgFloor);
+
+// 펠트 텍스처 (1024px 고해상도)
+var feltC=document.createElement('canvas');feltC.width=1024;feltC.height=1024;
+var fc=feltC.getContext('2d');
+var fg1=fc.createRadialGradient(512,450,0,512,512,720);
+fg1.addColorStop(0,'#1e3d30');fg1.addColorStop(0.4,'#18352a');
+fg1.addColorStop(0.8,'#112a20');fg1.addColorStop(1,'#0a1f16');
+fc.fillStyle=fg1;fc.fillRect(0,0,1024,1024);
+// 직물 질감
+fc.globalAlpha=0.025;
+for(var fli=0;fli<1024;fli+=2){
+  fc.strokeStyle=fli%4===0?'#ffffff':'#000000';fc.lineWidth=0.5;
+  fc.beginPath();fc.moveTo(0,fli);fc.lineTo(1024,fli);fc.stroke();
+  fc.beginPath();fc.moveTo(fli,0);fc.lineTo(fli,1024);fc.stroke();
+}
+fc.globalAlpha=1;
+// 중앙 밝은 스팟 반사
+var fg2=fc.createRadialGradient(512,400,0,512,512,450);
+fg2.addColorStop(0,'rgba(200,220,200,0.07)');fg2.addColorStop(1,'rgba(0,0,0,0)');
+fc.fillStyle=fg2;fc.fillRect(0,0,1024,1024);
+// 가장자리 어둡게 (비네트)
+var fg3=fc.createRadialGradient(512,512,200,512,512,720);
+fg3.addColorStop(0,'rgba(0,0,0,0)');fg3.addColorStop(1,'rgba(0,0,0,0.3)');
+fc.fillStyle=fg3;fc.fillRect(0,0,1024,1024);
+
+var feltTex=new THREE.CanvasTexture(feltC);
+feltTex.anisotropy=renderer.capabilities.getMaxAnisotropy();
+var floorMesh=new THREE.Mesh(
+  new THREE.PlaneGeometry(TW,TH),
+  new THREE.MeshStandardMaterial({map:feltTex,roughness:0.88,metalness:0.0})
+);
+floorMesh.rotation.x=-Math.PI/2;floorMesh.receiveShadow=true;scene.add(floorMesh);
+
+// ── 우드 프레임 텍스처 (512px) ──
+var woodC=document.createElement('canvas');woodC.width=512;woodC.height=128;
+var wc=woodC.getContext('2d');
+var wg=wc.createLinearGradient(0,0,0,128);
+wg.addColorStop(0,'#6b3820');wg.addColorStop(0.08,'#8a5030');
+wg.addColorStop(0.2,'#5a2c14');wg.addColorStop(0.5,'#7a4428');
+wg.addColorStop(0.8,'#5a2c14');wg.addColorStop(0.92,'#8a5030');
+wg.addColorStop(1,'#3e1c08');
+wc.fillStyle=wg;wc.fillRect(0,0,512,128);
+// 나무결
+wc.globalAlpha=0.06;
+for(var wgi=0;wgi<500;wgi++){
+  var wgy=Math.random()*128;
+  wc.strokeStyle=Math.random()>0.6?'#ffcc88':'#000';
+  wc.lineWidth=0.3+Math.random()*0.4;
+  wc.beginPath();wc.moveTo(0,wgy);
+  for(var wgx=0;wgx<512;wgx+=15){wc.lineTo(wgx,wgy+Math.sin(wgx*0.015)*1.5+(Math.random()-0.5))}
+  wc.stroke();
+}
+wc.globalAlpha=1;
+// 상단 하이라이트
+var whl=wc.createLinearGradient(0,0,0,16);
+whl.addColorStop(0,'rgba(255,230,190,0.3)');whl.addColorStop(1,'rgba(0,0,0,0)');
+wc.fillStyle=whl;wc.fillRect(0,0,512,16);
+// 하단 그림자
+var wsh=wc.createLinearGradient(0,112,0,128);
+wsh.addColorStop(0,'rgba(0,0,0,0)');wsh.addColorStop(1,'rgba(0,0,0,0.35)');
+wc.fillStyle=wsh;wc.fillRect(0,112,512,16);
+
+var woodTex=new THREE.CanvasTexture(woodC);
+woodTex.anisotropy=renderer.capabilities.getMaxAnisotropy();
+var edgeMat=new THREE.MeshStandardMaterial({map:woodTex,roughness:0.4,metalness:0.06});
+
+var EH=0.5,ET=0.4;
+var hw=TW/2,hh=TH/2;
+[{p:[0,EH/2,-hh-ET/2],s:[TW+ET*2,EH,ET],ry:0},
+ {p:[0,EH/2,hh+ET/2],s:[TW+ET*2,EH,ET],ry:Math.PI},
+ {p:[-hw-ET/2,EH/2,0],s:[TH,EH,ET],ry:Math.PI/2},
+ {p:[hw+ET/2,EH/2,0],s:[TH,EH,ET],ry:-Math.PI/2}].forEach(function(e){
+  var m=new THREE.Mesh(new THREE.BoxGeometry(e.s[0],e.s[1],e.s[2]),edgeMat);
+  m.position.set(e.p[0],e.p[1],e.p[2]);m.rotation.y=e.ry||0;
+  m.castShadow=true;m.receiveShadow=true;scene.add(m);
+});
+// 금색 림
+var rimMat=new THREE.MeshStandardMaterial({color:0xd4a84b,roughness:0.2,metalness:0.85});
+var rH=0.05;
+[{p:[0,EH+rH/2,-hh-ET/2],s:[TW+ET*2+0.04,rH,ET+0.04]},
+ {p:[0,EH+rH/2,hh+ET/2],s:[TW+ET*2+0.04,rH,ET+0.04]},
+ {p:[-hw-ET/2,EH+rH/2,0],s:[ET+0.04,rH,TH+0.04]},
+ {p:[hw+ET/2,EH+rH/2,0],s:[ET+0.04,rH,TH+0.04]}].forEach(function(e){
+  var m=new THREE.Mesh(new THREE.BoxGeometry(e.s[0],e.s[1],e.s[2]),rimMat);
+  m.position.set(e.p[0],e.p[1],e.p[2]);scene.add(m);
+});
+// 안쪽 경계선
+var innerMat=new THREE.MeshStandardMaterial({color:0x080808,roughness:0.9});
+var lw=0.05,lh=0.015;
+[{p:[0,lh/2,-hh+lw/2],s:[TW-lw,lh,lw]},{p:[0,lh/2,hh-lw/2],s:[TW-lw,lh,lw]},
+ {p:[-hw+lw/2,lh/2,0],s:[lw,lh,TH-lw]},{p:[hw-lw/2,lh/2,0],s:[lw,lh,TH-lw]}].forEach(function(e){
+  var m=new THREE.Mesh(new THREE.BoxGeometry(e.s[0],e.s[1],e.s[2]),innerMat);
+  m.position.set(e.p[0],e.p[1],e.p[2]);scene.add(m);
+});
+
+/* ===== CANNON 물리 ===== */
+var world=new CANNON.World();
+world.gravity.set(0,-30,0);
+world.broadphase=new CANNON.NaiveBroadphase();
+world.solver.iterations=20;
+world.defaultContactMaterial.restitution=0.3;
+world.defaultContactMaterial.friction=0.5;
+
+// 물리 바닥
+var floorBody=new CANNON.Body({mass:0,shape:new CANNON.Plane()});
+floorBody.quaternion.setFromAxisAngle(new CANNON.Vec3(1,0,0),-Math.PI/2);
+world.addBody(floorBody);
+
+// 물리 벽
+// 물리 벽 — 테이블 크기에 맞춤 (높이 2로 키워 탈출 방지)
+var whw=TW/2,whh=TH/2;
+[{p:[0,3,-whh],s:[whw,6,0.3]},{p:[0,3,whh],s:[whw,6,0.3]},{p:[-whw,3,0],s:[0.3,6,whh]},{p:[whw,3,0],s:[0.3,6,whh]}].forEach(function(w){
+  var b=new CANNON.Body({mass:0,shape:new CANNON.Box(new CANNON.Vec3(w.s[0],w.s[1],w.s[2]))});
+  b.position.set(w.p[0],w.p[1],w.p[2]);world.addBody(b);
+});
+// 천장 — 위로 튀어나가는 것 방지
+var ceilBody=new CANNON.Body({mass:0,shape:new CANNON.Plane()});
+ceilBody.quaternion.setFromAxisAngle(new CANNON.Vec3(1,0,0),Math.PI/2);
+ceilBody.position.set(0,10,0);
+world.addBody(ceilBody);
+
+/* ===== 주사위 텍스처 ===== */
+function makeDotTex(n){
+  var S=512;
+  var c=document.createElement('canvas');c.width=S;c.height=S;
+  var x=c.getContext('2d');
+
+  // 면 배경 — 부드러운 그라데이션
+  var bg=x.createLinearGradient(0,0,S,S);
+  bg.addColorStop(0,'#faf8f2');bg.addColorStop(0.5,'#f0ece2');bg.addColorStop(1,'#e6e0d4');
+  x.fillStyle=bg;x.fillRect(0,0,S,S);
+
+  // 베벨 효과 — 엣지 하이라이트/섀도
+  var bevel=20;
+  // 상단/좌측 하이라이트
+  x.fillStyle='rgba(255,255,255,0.35)';
+  x.fillRect(0,0,S,bevel);x.fillRect(0,0,bevel,S);
+  // 하단/우측 섀도
+  x.fillStyle='rgba(0,0,0,0.08)';
+  x.fillRect(0,S-bevel,S,bevel);x.fillRect(S-bevel,0,bevel,S);
+  // 코너 둥글기 마스크
+  x.globalCompositeOperation='destination-in';
+  var cr=50;
+  x.beginPath();
+  x.moveTo(cr,0);x.lineTo(S-cr,0);x.quadraticCurveTo(S,0,S,cr);
+  x.lineTo(S,S-cr);x.quadraticCurveTo(S,S,S-cr,S);
+  x.lineTo(cr,S);x.quadraticCurveTo(0,S,0,S-cr);
+  x.lineTo(0,cr);x.quadraticCurveTo(0,0,cr,0);
+  x.fillStyle='#fff';x.fill();
+  x.globalCompositeOperation='source-over';
+
+  // 점 위치 (512 기준)
+  var pos={
+    1:[[256,256]],
+    2:[[144,144],[368,368]],
+    3:[[144,144],[256,256],[368,368]],
+    4:[[144,144],[368,144],[144,368],[368,368]],
+    5:[[144,144],[368,144],[256,256],[144,368],[368,368]],
+    6:[[144,128],[368,128],[144,256],[368,256],[144,384],[368,384]]
+  };
+  var dotR=36;
+
+  pos[n].forEach(function(p){
+    // 점 오목한 부분 — 그림자
+    x.save();
+    x.beginPath();x.arc(p[0],p[1],dotR+2,0,Math.PI*2);
+    x.fillStyle='rgba(0,0,0,0.12)';x.fill();
+    x.restore();
+
+    // 점 — 그라데이션으로 입체감
+    var grd=x.createRadialGradient(p[0]-dotR*0.25,p[1]-dotR*0.25,dotR*0.1,p[0],p[1],dotR);
+    grd.addColorStop(0,'#505050');grd.addColorStop(0.5,'#2a2a2a');grd.addColorStop(1,'#111111');
+    x.beginPath();x.arc(p[0],p[1],dotR,0,Math.PI*2);x.fillStyle=grd;x.fill();
+
+    // 하이라이트 반사
+    var hl=x.createRadialGradient(p[0]-dotR*0.3,p[1]-dotR*0.35,0,p[0]-dotR*0.2,p[1]-dotR*0.25,dotR*0.5);
+    hl.addColorStop(0,'rgba(255,255,255,0.3)');hl.addColorStop(1,'rgba(255,255,255,0)');
+    x.beginPath();x.arc(p[0],p[1],dotR,0,Math.PI*2);x.fillStyle=hl;x.fill();
+  });
+
+  var t=new THREE.CanvasTexture(c);
+  t.anisotropy=renderer.capabilities.getMaxAnisotropy();
+  t.needsUpdate=true;
+  return t;
+}
+var dotTextures=[];for(var ti=1;ti<=6;ti++)dotTextures.push(makeDotTex(ti));
+
+function getDiceMats(){
+  // Three.js BoxGeometry 면 순서: +X, -X, +Y, -Y, +Z, -Z
+  // 표준 주사위: +X=3, -X=4, +Y=2, -Y=5, +Z=1, -Z=6 (맞은편 합 7)
+  var map=[2,3,1,4,0,5]; // [3face,4face,2face,5face,1face,6face] → 0-indexed
+  return map.map(function(fi){
+    return new THREE.MeshStandardMaterial({map:dotTextures[fi],roughness:0.25,metalness:0.03,envMapIntensity:0.5});
+  });
+}
+
+function readTopFace(body){
+  var up=new CANNON.Vec3(0,1,0);
+  var localUp=new CANNON.Vec3();
+  var conj=new CANNON.Quaternion();
+  body.quaternion.conjugate(conj);
+  conj.vmult(up,localUp);
+  var ax=Math.abs(localUp.x),ay=Math.abs(localUp.y),az=Math.abs(localUp.z);
+  var max=Math.max(ax,ay,az);
+  if(max===ax)return localUp.x>0?3:4;
+  if(max===ay)return localUp.y>0?2:5;
+  return localUp.z>0?1:6;
+}
+
+/* ===== 주사위 관리 ===== */
+var diceMeshes=[],diceBodies=[],diceCount=1;
+var isRolling=false,isDragging=false;
+var historyArr=[],MAX_HIST=20;
+
+function clearDice(){
+  diceMeshes.forEach(function(m){scene.remove(m)});
+  diceBodies.forEach(function(b){world.removeBody(b)});
+  diceMeshes=[];diceBodies=[];
+}
+
+function spawnDice(){
+  clearDice();
+  var offsets=[
+    [[0,0]],
+    [[-1,0],[1,0]],
+    [[-1.5,0.3],[0,-0.3],[1.5,0.3]],
+    [[-1.5,-0.7],[1.5,-0.7],[-1.5,0.7],[1.5,0.7]],
+    [[-2,-0.7],[0,-0.7],[2,-0.7],[-1,0.7],[1,0.7]]
+  ];
+  var pos=offsets[diceCount-1];
+  for(var i=0;i<diceCount;i++){
+    var px=Array.isArray(pos[i])?pos[i][0]:pos[i];
+    var pz=Array.isArray(pos[i])?pos[i][1]:0;
+    var mesh=new THREE.Mesh(new THREE.BoxGeometry(1,1,1),getDiceMats());
+    mesh.castShadow=true;mesh.receiveShadow=true;
+    scene.add(mesh);diceMeshes.push(mesh);
+
+    var body=new CANNON.Body({mass:1,shape:new CANNON.Box(new CANNON.Vec3(0.5,0.5,0.5))});
+    body.position.set(px,0.5,pz);
+    body.linearDamping=0.3;body.angularDamping=0.4;
+    // 충돌 사운드
+    body.addEventListener('collide',function(e){
+      var vel=e.contact?Math.abs(e.contact.getImpactVelocityAlongNormal()):0;
+      if(vel>0.5)playImpact(Math.min(0.4,vel*0.05));
+    });
+    world.addBody(body);diceBodies.push(body);
+  }
+}
+
+function setCount(n,btn){
+  if(isRolling||isDragging)return;
+  diceCount=n;
+  document.querySelectorAll('.count-btn').forEach(function(b){b.classList.remove('active')});
+  btn.classList.add('active');
+  document.getElementById('resultNum').classList.remove('show');
+  document.getElementById('resultTotal').classList.remove('show');
+  spawnDice();
+}
+
+/* ===== 드래그 & 던지기 ===== */
+var raycaster=new THREE.Raycaster();
+var mouse=new THREE.Vector2();
+var dragPlane=new THREE.Plane(new THREE.Vector3(0,1,0),0); // y=0 수평면
+var dragOffset=new THREE.Vector3();
+var intersection=new THREE.Vector3();
+
+// 속도 추적
+var prevMouse={x:0,y:0,t:0};
+var velocityHistory=[];
+var GRAB_HEIGHT=3.0; // 잡았을 때 들어올리는 높이
+
+function getPointerPos(e){
+  var rect=canvas.getBoundingClientRect();
+  var clientX,clientY;
+  if(e.touches){clientX=e.touches[0].clientX;clientY=e.touches[0].clientY}
+  else{clientX=e.clientX;clientY=e.clientY}
+  return{
+    x:((clientX-rect.left)/rect.width)*2-1,
+    y:-((clientY-rect.top)/rect.height)*2+1
+  };
+}
+
+var tapStartTime=0;
+
+function onPointerDown(e){
+  if(isRolling)return;
+  e.preventDefault();
+  var p=getPointerPos(e);
+  mouse.set(p.x,p.y);
+  raycaster.setFromCamera(mouse,camera);
+
+  var hits=raycaster.intersectObjects(diceMeshes);
+  if(hits.length>0){
+    isDragging=true;
+    tapStartTime=performance.now();
+    // 결과 숨기기
+    document.getElementById('resultNum').classList.remove('show');
+    document.getElementById('resultTotal').classList.remove('show');
+
+    // 모든 주사위를 잡음 — mass를 0으로 (키네마틱)
+    diceBodies.forEach(function(b){
+      b.mass=0;b.updateMassProperties();
+      b.velocity.setZero();b.angularVelocity.setZero();
+    });
+
+    // 드래그 평면 높이 설정
+    dragPlane.constant=-GRAB_HEIGHT;
+
+    velocityHistory=[];
+    prevMouse={x:p.x,y:p.y,t:performance.now()};
+  }
+}
+
+function onPointerMove(e){
+  if(!isDragging)return;
+  e.preventDefault();
+  var p=getPointerPos(e);
+  mouse.set(p.x,p.y);
+  raycaster.setFromCamera(mouse,camera);
+
+  if(raycaster.ray.intersectPlane(dragPlane,intersection)){
+    var now=performance.now();
+    var dt=now-prevMouse.t;
+
+    // 속도 기록 (월드 좌표 기반)
+    if(dt>0){
+      velocityHistory.push({
+        vx:(p.x-prevMouse.x)/dt*1000,
+        vy:(p.y-prevMouse.y)/dt*1000,
+        t:now
+      });
+      // 최근 100ms만 유지
+      while(velocityHistory.length>0&&now-velocityHistory[0].t>100)velocityHistory.shift();
+    }
+    prevMouse={x:p.x,y:p.y,t:now};
+
+    // 주사위를 마우스 위치로 이동 + 약간 흔들리는 회전
+    var cx=intersection.x,cz=intersection.z;
+    var offsets=[
+      [[0,0]],
+      [[-0.6,0],[0.6,0]],
+      [[-0.8,0.3],[0,-0.3],[0.8,0.3]],
+      [[-0.8,-0.5],[0.8,-0.5],[-0.8,0.5],[0.8,0.5]],
+      [[-1,-0.5],[0,-0.5],[1,-0.5],[-0.5,0.5],[0.5,0.5]]
+    ];
+    var ofs=offsets[diceCount-1];
+
+    for(var i=0;i<diceBodies.length;i++){
+      var ox=Array.isArray(ofs[i])?ofs[i][0]:ofs[i];
+      var oz=Array.isArray(ofs[i])?ofs[i][1]:0;
+      diceBodies[i].position.set(cx+ox,GRAB_HEIGHT,cz+oz);
+      // 흔드는 동안 약간 회전
+      var shake=Math.sin(now*0.015+i*2)*0.15;
+      diceBodies[i].angularVelocity.set(
+        (Math.random()-0.5)*8,
+        (Math.random()-0.5)*8,
+        shake*10
+      );
+    }
+  }
+}
+
+function quickThrow(){
+  // 탭 한번 — 랜덤 방향으로 자동 던지기
+  isRolling=true;playRumble();
+  diceBodies.forEach(function(b){
+    b.mass=1;b.updateMassProperties();
+    b.position.y=GRAB_HEIGHT+1;
+    b.velocity.set((Math.random()-0.5)*4,5+Math.random()*3,-3-Math.random()*3);
+    b.angularVelocity.set((Math.random()-0.5)*20,(Math.random()-0.5)*20,(Math.random()-0.5)*20);
+    b.linearDamping=0.35;b.angularDamping=0.4;
+  });
+  waitForSettle();
+}
+
+function onPointerUp(e){
+  if(!isDragging)return;
+  isDragging=false;
+
+  var tapDuration=performance.now()-tapStartTime;
+
+  // 짧은 탭 (200ms 이내, 드래그 거의 없음) → 바로 던지기
+  if(tapDuration<200&&velocityHistory.length<3){
+    quickThrow();
+    return;
+  }
+
+  // 평균 속도 계산
+  var avgVx=0,avgVy=0,count=velocityHistory.length;
+  if(count>0){
+    velocityHistory.forEach(function(v){avgVx+=v.vx;avgVy+=v.vy});
+    avgVx/=count;avgVy/=count;
+  }
+
+  var throwForce=Math.sqrt(avgVx*avgVx+avgVy*avgVy);
+  var minForce=1.5;
+
+  if(throwForce<minForce){
+    // 드래그가 느렸으면 그냥 툭 던지기
+    quickThrow();
+    return;
+  }
+
+  // 던지기!
+  isRolling=true;
+  playRumble();
+
+  var worldVx=avgVx*2.5;
+  var worldVz=-avgVy*2.5;
+  // 최대 속도 제한 — 테이블 밖으로 나가지 않도록
+  var maxSpd=5;
+  var spd=Math.sqrt(worldVx*worldVx+worldVz*worldVz);
+  if(spd>maxSpd){worldVx=worldVx/spd*maxSpd;worldVz=worldVz/spd*maxSpd}
+
+  diceBodies.forEach(function(b,i){
+    b.mass=1;b.updateMassProperties();
+    // 테이블 중앙 근처에서 시작하도록 위치 보정
+    var bx=b.position.x,bz=b.position.z;
+    var limX=TW/2-1,limZ=TH/2-1;
+    if(bx<-limX)b.position.x=-limX;if(bx>limX)b.position.x=limX;
+    if(bz<-limZ)b.position.z=-limZ;if(bz>limZ)b.position.z=limZ;
+    b.position.y=GRAB_HEIGHT+1;
+    b.velocity.set(
+      worldVx+(Math.random()-0.5)*1.5,
+      5+Math.random()*4,
+      worldVz+(Math.random()-0.5)*1.5
+    );
+    b.angularVelocity.set(
+      (Math.random()-0.5)*20,
+      (Math.random()-0.5)*20,
+      (Math.random()-0.5)*20
+    );
+    b.linearDamping=0.35;
+    b.angularDamping=0.4;
+  });
+
+  waitForSettle();
+}
+
+function waitForSettle(){
+  var stableFrames=0,checkStart=performance.now();
+  function check(){
+    var allSlow=true;
+    for(var j=0;j<diceBodies.length;j++){
+      var b=diceBodies[j];
+      if(b.velocity.length()>0.12||b.angularVelocity.length()>0.25){allSlow=false;break}
+    }
+    if(allSlow)stableFrames++;else stableFrames=0;
+
+    if(stableFrames>=50||performance.now()-checkStart>4000){
+      var results=[];
+      for(var k=0;k<diceBodies.length;k++){
+        results.push(readTopFace(diceBodies[k]));
+        diceBodies[k].velocity.setZero();
+        diceBodies[k].angularVelocity.setZero();
+      }
+      showResults(results);
+      isRolling=false;
+      return;
+    }
+    requestAnimationFrame(check);
+  }
+  setTimeout(check,300);
+}
+
+// 이벤트 바인딩
+canvas.addEventListener('mousedown',onPointerDown);
+canvas.addEventListener('mousemove',onPointerMove);
+canvas.addEventListener('mouseup',onPointerUp);
+canvas.addEventListener('mouseleave',onPointerUp);
+canvas.addEventListener('touchstart',onPointerDown,{passive:false});
+canvas.addEventListener('touchmove',onPointerMove,{passive:false});
+canvas.addEventListener('touchend',onPointerUp);
+canvas.addEventListener('touchcancel',onPointerUp);
+
+/* ===== 결과/히스토리 ===== */
+function showResults(results){
+  document.getElementById('resultNum').textContent=results.join('  +  ');
+  document.getElementById('resultNum').classList.add('show');
+  if(results.length>1){
+    var sum=results.reduce(function(a,b){return a+b},0);
+    document.getElementById('resultTotal').textContent=tx('total')+': '+sum;
+    document.getElementById('resultTotal').classList.add('show');
+  }
+  historyArr.unshift(results.slice());
+  if(historyArr.length>MAX_HIST)historyArr.pop();
+  renderHistory();
+}
+function clearHistory(){
+  historyArr=[];renderHistory();
+}
+function renderHistory(){
+  document.getElementById('historyList').innerHTML=historyArr.map(function(r){
+    var s=r.reduce(function(a,b){return a+b},0),l=r.join(', ');
+    if(r.length>1)l+='<span class="chip-sum">= '+s+'</span>';
+    return '<span class="history-chip">'+l+'</span>';
+  }).join('');
+}
+
+/* ===== 렌더 루프 ===== */
+var clock=new THREE.Clock();
+function animate(){
+  requestAnimationFrame(animate);
+  var dt=Math.min(clock.getDelta(),0.05);
+  world.step(1/60,dt,3);
+  var limX=TW/2-0.6,limZ=TH/2-0.6;
+  for(var i=0;i<diceMeshes.length;i++){
+    var b=diceBodies[i];
+    // 강제 클램핑 — 절대 테이블 밖으로 나가지 않음
+    if(b.position.x<-limX){b.position.x=-limX;if(b.velocity.x<0)b.velocity.x*=-0.3}
+    if(b.position.x>limX){b.position.x=limX;if(b.velocity.x>0)b.velocity.x*=-0.3}
+    if(b.position.z<-limZ){b.position.z=-limZ;if(b.velocity.z<0)b.velocity.z*=-0.3}
+    if(b.position.z>limZ){b.position.z=limZ;if(b.velocity.z>0)b.velocity.z*=-0.3}
+    if(b.position.y>10){b.position.y=10;if(b.velocity.y>0)b.velocity.y=0}
+    diceMeshes[i].position.copy(b.position);
+    diceMeshes[i].quaternion.copy(b.quaternion);
+  }
+  renderer.render(scene,camera);
+}
+animate();
+
+window.addEventListener('resize',function(){
+  W=wrap.offsetWidth;H=Math.round(W*0.75);
+  renderer.setSize(W,H);camera.aspect=W/H;camera.updateProjectionMatrix();
+});
+
+// 스페이스바로도 던지기 (기존 위치에서 랜덤 던짐)
+document.addEventListener('keydown',function(e){
+  if((e.code==='Space'||e.key===' ')&&!isRolling&&!isDragging){
+    e.preventDefault();
+    isRolling=true;playRumble();
+    diceBodies.forEach(function(b){
+      b.mass=1;b.updateMassProperties();
+      b.position.set((Math.random()-0.5)*2,4,3+(Math.random()));
+      b.velocity.set((Math.random()-0.5)*3,5+Math.random()*3,-5-Math.random()*3);
+      b.angularVelocity.set((Math.random()-0.5)*18,(Math.random()-0.5)*18,(Math.random()-0.5)*18);
+      b.linearDamping=0.35;b.angularDamping=0.4;
+    });
+    waitForSettle();
+  }
+});
+
+spawnDice();
+applyLang(getSavedLang());
+</script>
+</body>
+</html>

@@ -369,6 +369,15 @@
         <div class="card-arrow" id="coordEnter">Enter</div>
       </a>
 
+      <!-- 주사위 굴리기 -->
+      <a class="card" href="dice_v1.html">
+        <span class="card-tag" id="diceTag">Tool · Game</span>
+        <div class="card-icon">🎲</div>
+        <div class="card-title">Dice Roller</div>
+        <p class="card-desc" id="diceDesc">입체 3D 주사위를 굴려보세요.<br>보드게임에 주사위가 없을 때 유용!</p>
+        <div class="card-arrow" id="diceEnter">Enter</div>
+      </a>
+
     </div>
   </div>
 
@@ -448,6 +457,29 @@
         es: "Entrar", fr: "Entrer", de: "Starten", pt: "Entrar",
         hi: "शुरू करें", ar: "ادخل",
       },
+      diceTag: {
+        ko: "Tool · Game", en: "Tool · Game", ja: "ツール · ゲーム",
+        zh: "工具 · 游戏", es: "Herramienta · Juego", fr: "Outil · Jeu",
+        de: "Werkzeug · Spiel", pt: "Ferramenta · Jogo",
+        hi: "उपकरण · खेल", ar: "أداة · لعبة",
+      },
+      diceDesc: {
+        ko: "입체 3D 주사위를 굴려보세요.<br>보드게임에 주사위가 없을 때 유용!",
+        en: "Roll 3D dice on your screen.<br>Perfect when you don't have real dice!",
+        ja: "3Dサイコロを振ってみよう。<br>本物のサイコロがない時に便利！",
+        zh: "在屏幕上掷3D骰子。<br>没有实体骰子时超实用！",
+        es: "Lanza dados 3D en tu pantalla.<br>¡Perfecto cuando no tienes dados reales!",
+        fr: "Lancez des dés 3D sur votre écran.<br>Parfait sans vrais dés !",
+        de: "Würfle 3D-Würfel auf dem Bildschirm.<br>Perfekt ohne echte Würfel!",
+        pt: "Jogue dados 3D na sua tela.<br>Perfeito quando não tem dados reais!",
+        hi: "स्क्रीन पर 3D पासा फेंकें।<br>असली पासा न हो तो बहुत काम का!",
+        ar: "ارمِ نردًا ثلاثي الأبعاد على شاشتك.<br>مثالي عندما لا يتوفر نرد حقيقي!",
+      },
+      diceEnter: {
+        ko: "시작하기", en: "Enter", ja: "はじめる", zh: "进入",
+        es: "Entrar", fr: "Entrer", de: "Starten", pt: "Entrar",
+        hi: "शुरू करें", ar: "ادخل",
+      },
     };
 
     function getSavedLang() {
@@ -470,13 +502,14 @@
       document.getElementById('langName').textContent = l.name;
 
       // 텍스트 업데이트
-      ['subtitle','section','clockTag','clockEnter','coordTag','coordEnter'].forEach(function(key) {
+      ['subtitle','section','clockTag','clockEnter','coordTag','coordEnter','diceTag','diceEnter'].forEach(function(key) {
         var el = document.getElementById('txt' + key.charAt(0).toUpperCase() + key.slice(1)) ||
                  document.getElementById(key);
         if (el) el.innerHTML = tx(key, code);
       });
       document.getElementById('clockDesc').innerHTML = tx('clockDesc', code);
       document.getElementById('coordDesc').innerHTML = tx('coordDesc', code);
+      document.getElementById('diceDesc').innerHTML = tx('diceDesc', code);
 
       // 활성 표시
       document.querySelectorAll('.lang-option').forEach(function(btn) {
