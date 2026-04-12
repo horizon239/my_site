@@ -190,7 +190,7 @@
             <span style={{ color: HC }}>● {tx("hourH", lang)}</span>
             {showMin && <span style={{ color: MC }}>● {tx("minH", lang)}</span>}
           </div>
-          {digital && <div style={{ background: "#1e272e", borderRadius: 16, padding: "12px 28px", fontFamily: "'Bagel Fat One',cursive", fontSize: 34, color: "#7bed9f", letterSpacing: 4, boxShadow: "inset 0 2px 8px rgba(0,0,0,0.5)", border: "3px solid #3d3027" }}>{hour} : {String(minute).padStart(2, "0")}</div>}
+          {digital && <div style={{ background: "rgba(255,255,255,0.7)", borderRadius: 10, padding: "7px 18px", fontFamily: "'Bagel Fat One',cursive", fontSize: 22, color: "#3d3027", letterSpacing: 3, border: "2px solid #e0d6c8" }}>{hour} : {String(minute).padStart(2, "0")}</div>}
         </div>
       );
     }
@@ -396,12 +396,28 @@
 
     function LiveClock(props) {
       var _t = useState(new Date()), time = _t[0], setTime = _t[1];
-      useEffect(function () { var id = setInterval(function () { setTime(new Date()); }, 1000); return function () { clearInterval(id); }; }, []);
-      return (<div style={{ textAlign: "center" }}><p style={{ fontSize: 12, color: "#8a7e72", margin: "0 0 6px" }}>{tx("now", props.lang)}</p><Clock hour={time.getHours() % 12 || 12} minute={time.getMinutes()} size={130} digital={true} showMin={true} lang={props.lang} /></div>);
+      var calcSize = function() { var avail = Math.min(window.innerWidth - 32, 608); return Math.min(Math.floor((avail - 120) * 0.88), 240); };
+      var _sz = useState(calcSize), sz = _sz[0], setSz = _sz[1];
+      useEffect(function () {
+        var id = setInterval(function () { setTime(new Date()); }, 1000);
+        var onResize = function() { setSz(calcSize()); };
+        window.addEventListener("resize", onResize);
+        return function () { clearInterval(id); window.removeEventListener("resize", onResize); };
+      }, []);
+      var h = time.getHours() % 12 || 12, m = time.getMinutes();
+      return (
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 16 }}>
+          <Clock hour={h} minute={m} size={sz} digital={false} showMin={true} lang={props.lang} />
+          <div style={{ textAlign: "center" }}>
+            <p style={{ fontSize: 11, color: "#8a7e72", marginBottom: 10, letterSpacing: 1 }}>{tx("now", props.lang)}</p>
+            <div style={{ background: "rgba(255,255,255,0.7)", borderRadius: 10, padding: "8px 16px", fontFamily: "'Bagel Fat One',cursive", fontSize: 22, color: "#3d3027", letterSpacing: 3, border: "2px solid #e0d6c8" }}>{h} : {String(m).padStart(2, "0")}</div>
+          </div>
+        </div>
+      );
     }
 
     function App() {
-      var _l = useState("ko"), lang = _l[0], setLang = _l[1];
+      var lang = useState(function() { try { return localStorage.getItem('lang') || 'ko'; } catch(e) { return 'ko'; } })[0];
       var _s = useState("home"), scr = _s[0], setScr = _s[1];
       var menus = [
         { id: "learn", emoji: "📖", tk: "learn", dk: "learnD", color: HC },
@@ -410,7 +426,6 @@
       ];
       return (
         <div style={{ minHeight: "100vh", background: "linear-gradient(170deg,#fef9ef 0%,#fdecd0 40%,#f8e8d6 100%)", position: "relative", userSelect: "none", WebkitUserSelect: "none", WebkitTouchCallout: "none" }}>
-          <LangPicker lang={lang} setLang={setLang} />
           <div style={{ maxWidth: 640, margin: "0 auto", padding: "14px 16px", position: "relative", zIndex: 1 }}>
             {scr !== "home" ? (
               <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 6 }}>
@@ -430,7 +445,7 @@
             {scr === "home" && (
               <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
                 {menus.map(function (item) { return (<button key={item.id} onClick={function () { setScr(item.id); }} style={{ display: "flex", alignItems: "center", gap: 16, padding: "20px 22px", background: "rgba(255,255,255,0.9)", border: "2px solid #f0ebe3", borderRadius: 22, cursor: "pointer", boxShadow: "0 6px 24px rgba(0,0,0,0.05)", textAlign: "left" }}><div style={{ fontSize: 36, width: 60, height: 60, display: "flex", alignItems: "center", justifyContent: "center", background: item.color + "12", borderRadius: 16, flexShrink: 0 }}>{item.emoji}</div><div><div style={{ fontFamily: "'Gaegu',cursive", fontSize: 26, fontWeight: 700, color: "#3d3027" }}>{tx(item.tk, lang)}</div><div style={{ fontSize: 16, color: "#8a7e72", marginTop: 2 }}>{tx(item.dk, lang)}</div></div><div style={{ marginLeft: "auto", fontSize: 20, color: "#ccc" }}>▶</div></button>); })}
-                <div style={{ marginTop: 8 }}><LiveClock lang={lang} /></div>
+                <div style={{ marginTop: 4 }}><LiveClock lang={lang} /></div>
               </div>
             )}
             {scr === "learn" && <LearnMode lang={lang} onHome={function () { setScr("home"); }} />}
