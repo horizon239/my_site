@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clock Adventure</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&family=Bagel+Fat+One&family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Noto Sans KR', sans-serif; }
+    button:active { transform: scale(0.95) !important; }
+    * { -webkit-user-select: none; -webkit-touch-callout: none; user-select: none; }
+    @keyframes confettiFall { 0% { transform: translateY(0) rotate(0); opacity: 1; } 100% { transform: translateY(100vh) rotate(720deg); opacity: 0; } }
+    @keyframes shake { 0%,100% { transform: translateX(0); } 20% { transform: translateX(-8px); } 40% { transform: translateX(8px); } 60% { transform: translateX(-5px); } 80% { transform: translateX(5px); } }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useRef, useCallback } = React;
+
+    var LANGS = [
+      { code: "en", name: "English", flag: "🇺🇸" },
+      { code: "ko", name: "한국어", flag: "🇰🇷" },
+      { code: "ja", name: "日本語", flag: "🇯🇵" },
+      { code: "zh", name: "中文", flag: "🇨🇳" },
+      { code: "es", name: "Español", flag: "🇪🇸" },
+      { code: "fr", name: "Français", flag: "🇫🇷" },
+      { code: "de", name: "Deutsch", flag: "🇩🇪" },
+      { code: "pt", name: "Português", flag: "🇧🇷" },
+      { code: "hi", name: "हिन्दी", flag: "🇮🇳" },
+      { code: "ar", name: "العربية", flag: "🇸🇦" },
+    ];
+
+    var TT = {
+      appTitle: { en: "Clock Adventure", ko: "시계 나라 여행", ja: "時計の冒険", zh: "时钟冒险", es: "Aventura del Reloj", fr: "Aventure Horloge", de: "Uhr-Abenteuer", pt: "Aventura do Relogio", hi: "घड़ी का सफ़र", ar: "مغامرة الساعة" },
+      sub: { en: "Learn to read clocks!", ko: "바늘 시계, 같이 배워요!", ja: "時計の読み方を学ぼう！", zh: "一起学习看时钟！", es: "Aprende a leer el reloj!", fr: "Apprends a lire l heure !", de: "Lerne die Uhr lesen!", pt: "Aprenda a ler o relogio!", hi: "घड़ी पढ़ना सीखें!", ar: "تعلم قراءة الساعة!" },
+      learn: { en: "Learn", ko: "배우기", ja: "学ぶ", zh: "学习", es: "Aprender", fr: "Apprendre", de: "Lernen", pt: "Aprender", hi: "सीखें", ar: "تعلّم" },
+      learnD: { en: "Hour & minute hands step by step", ko: "시침, 분침 차근차근", ja: "時針と分針を学ぼう", zh: "一步步学习指针", es: "Paso a paso", fr: "Pas a pas", de: "Schritt fuer Schritt", pt: "Passo a passo", hi: "कदम दर कदम", ar: "خطوة بخطوة" },
+      play: { en: "Play", ko: "놀아보기", ja: "遊ぶ", zh: "玩一玩", es: "Jugar", fr: "Jouer", de: "Spielen", pt: "Brincar", hi: "खेलें", ar: "العب" },
+      playD: { en: "Drag the hands yourself!", ko: "바늘을 직접 돌려봐요", ja: "針を動かそう！", zh: "自己拖动指针！", es: "Arrastra las agujas!", fr: "Deplace les aiguilles !", de: "Ziehe die Zeiger!", pt: "Arraste os ponteiros!", hi: "सुइयाँ घुमाएँ!", ar: "اسحب العقارب!" },
+      quiz: { en: "Quiz", ko: "퀴즈", ja: "クイズ", zh: "测验", es: "Quiz", fr: "Quiz", de: "Quiz", pt: "Quiz", hi: "क्विज़", ar: "اختبار" },
+      quizD: { en: "Test what you learned!", ko: "배운 걸 확인해봐요", ja: "学んだことを確認！", zh: "测试你学到的！", es: "Pon a prueba!", fr: "Teste-toi !", de: "Teste dich!", pt: "Teste-se!", hi: "जाँचें!", ar: "اختبر نفسك!" },
+      now: { en: "Current Time", ko: "지금 시각", ja: "現在の時刻", zh: "当前时间", es: "Hora actual", fr: "Heure actuelle", de: "Aktuelle Uhrzeit", pt: "Hora atual", hi: "अभी का समय", ar: "الوقت الحالي" },
+      hourH: { en: "Hour (short)", ko: "시침 (짧은 바늘)", ja: "時針（短い）", zh: "时针（短）", es: "Hora (corta)", fr: "Heures (courte)", de: "Stunde (kurz)", pt: "Hora (curto)", hi: "घंटा (छोटी)", ar: "ساعات (قصير)" },
+      minH: { en: "Minute (long)", ko: "분침 (긴 바늘)", ja: "分針（長い）", zh: "分针（长）", es: "Minuto (larga)", fr: "Minutes (longue)", de: "Minute (lang)", pt: "Minuto (longo)", hi: "मिनट (लम्बी)", ar: "دقائق (طويل)" },
+      next: { en: "Next →", ko: "다음 →", ja: "次 →", zh: "下一步 →", es: "Siguiente →", fr: "Suivant →", de: "Weiter →", pt: "Proximo →", hi: "अगला →", ar: "التالي →" },
+      prev: { en: "← Back", ko: "← 이전", ja: "← 前", zh: "← 上一步", es: "← Anterior", fr: "← Precedent", de: "← Zurueck", pt: "← Anterior", hi: "← पिछला", ar: "السابق ←" },
+      done: { en: "All done!", ko: "다 배웠어요!", ja: "完了！", zh: "全部学完了！", es: "Listo!", fr: "Termine !", de: "Geschafft!", pt: "Pronto!", hi: "हो गया!", ar: "تم!" },
+      drag: { en: "Touch the clock and drag!", ko: "시계를 터치하고 돌려보세요!", ja: "時計をタッチして回そう！", zh: "触摸时钟并拖动！", es: "Toca y arrastra!", fr: "Touche et glisse !", de: "Beruehre und ziehe!", pt: "Toque e arraste!", hi: "छुएं और घुमाएं!", ar: "المس واسحب!" },
+      home: { en: "Home", ko: "돌아가기", ja: "ホーム", zh: "首页", es: "Inicio", fr: "Accueil", de: "Start", pt: "Inicio", hi: "होम", ar: "الرئيسية" },
+      whatTime: { en: "What time is it?", ko: "몇 시일까요?", ja: "何時ですか？", zh: "现在几点？", es: "Que hora es?", fr: "Quelle heure est-il ?", de: "Wie spaet ist es?", pt: "Que horas sao?", hi: "कितने बजे?", ar: "كم الساعة؟" },
+      setTime: { en: "Drag hands to match!", ko: "바늘을 돌려서 맞춰보세요!", ja: "針を合わせよう！", zh: "拖动指针匹配！", es: "Ajusta las agujas!", fr: "Ajuste les aiguilles !", de: "Stelle die Zeiger ein!", pt: "Ajuste os ponteiros!", hi: "सुइयाँ मिलाएँ!", ar: "اضبط العقارب!" },
+      submit: { en: "Submit!", ko: "이걸로!", ja: "決定！", zh: "提交！", es: "Enviar!", fr: "Valider !", de: "Fertig!", pt: "Enviar!", hi: "जमा!", ar: "تأكيد!" },
+      correct: { en: "Correct!", ko: "정답!", ja: "正解！", zh: "正确！", es: "Correcto!", fr: "Correct !", de: "Richtig!", pt: "Correto!", hi: "सही!", ar: "صحيح!" },
+      readQ: { en: "Read the Clock", ko: "시계 읽기", ja: "時計を読む", zh: "读时钟", es: "Leer el Reloj", fr: "Lire l Horloge", de: "Uhr ablesen", pt: "Ler o Relogio", hi: "घड़ी पढ़ें", ar: "اقرأ الساعة" },
+      setQ: { en: "Set the Clock", ko: "시계 만들기", ja: "時計を合わせる", zh: "设置时钟", es: "Ajustar el Reloj", fr: "Regler l Horloge", de: "Uhr einstellen", pt: "Ajustar o Relogio", hi: "घड़ी सेट करें", ar: "اضبط الساعة" },
+      score: { en: "Score", ko: "점수", ja: "スコア", zh: "得分", es: "Puntos", fr: "Score", de: "Punkte", pt: "Pontos", hi: "स्कोर", ar: "النقاط" },
+      qNum: { en: "Q", ko: "문제", ja: "問", zh: "题", es: "P", fr: "Q", de: "F", pt: "P", hi: "प्र", ar: "س" },
+      again: { en: "Try again", ko: "다시 도전", ja: "もう一度", zh: "再试", es: "De nuevo", fr: "Reessayer", de: "Nochmal", pt: "De novo", hi: "फिर से", ar: "حاول مجددا" },
+      diff: { en: "Difficulty", ko: "난이도", ja: "難易度", zh: "难度", es: "Dificultad", fr: "Difficulte", de: "Schwierigkeit", pt: "Dificuldade", hi: "कठिनाई", ar: "الصعوبة" },
+      tryIt: { en: "Let me try!", ko: "나도 해볼래!", ja: "やってみる！", zh: "我也要试！", es: "Yo tambien!", fr: "A moi !", de: "Ich auch!", pt: "Eu tambem!", hi: "मैं भी!", ar: "أنا أيضا!" },
+      makeTime: { en: "Make this time:", ko: "이 시간을 만들어봐:", ja: "この時間を作ろう:", zh: "设置这个时间:", es: "Pon esta hora:", fr: "Fais cette heure:", de: "Stelle diese Zeit:", pt: "Faca este horario:", hi: "यह समय बनाओ:", ar: "اضبط هذا الوقت:" },
+      lvl: { en: ["Exact hour", "Half hour", "Quarter", "5 minutes"], ko: ["정각", "30분", "15분", "5분"], ja: ["ちょうど", "30分", "15分", "5分"], zh: ["整点", "半小时", "一刻钟", "5分钟"], es: ["Hora exacta", "Media hora", "Cuarto", "5 minutos"], fr: ["Heure pile", "Demi-heure", "Quart", "5 minutes"], de: ["Volle Stunde", "Halbe Stunde", "Viertel", "5 Minuten"], pt: ["Hora exata", "Meia hora", "Quarto", "5 minutos"], hi: ["पूरा घंटा", "आधा घंटा", "चौथाई", "5 मिनट"], ar: ["بالضبط", "نصف ساعة", "ربع ساعة", "5 دقائق"] },
+    };
+
+    function tx(k, lang) { var v = TT[k]; if (!v) return k; return v[lang] || v.en || k; }
+    function fmtTime(h, m, lang) {
+      if (lang === "ko") return h + "시 " + (m === 0 ? "정각" : m + "분");
+      if (lang === "ja") return h + "時" + (m === 0 ? "ちょうど" : m + "分");
+      if (lang === "zh") return h + "点" + (m === 0 ? "整" : m + "分");
+      if (lang === "fr") return h + "h" + (m === 0 ? "00" : String(m).padStart(2, "0"));
+      return h + ":" + String(m).padStart(2, "0");
+    }
+
+    var LESSONS_DATA = {
+      en: [
+        { t: "The Short Hand", d: "A clock has two hands.\nThe short, thick one is the hour hand.\nIt tells us what hour it is!", tip: "Short hand points to 3 = 3 o clock!", ex: [3, 0], prac: [5, 0], hl: "hour", sm: false },
+        { t: "Exact Hours", d: "When the long hand points to 12,\nit means the exact hour.\nThe short hand shows which hour!", tip: "Long hand at 12, short at 7 = 7 o clock!", ex: [7, 0], prac: [10, 0], hl: "both", sm: true },
+        { t: "The Long Hand", d: "The long, thin hand is the minute hand.\nIt tells us how many minutes!\nAt 12, it means 0 minutes.", tip: "The long hand shows minutes!", ex: [4, 0], prac: [6, 0], hl: "minute", sm: true },
+        { t: "30 Minutes = Half!", d: "When the long hand points to 6,\nit is 30 minutes.\nWe call it half past!", tip: "Long hand at 6 = 30 min! Half past 9!", ex: [9, 30], prac: [3, 30], hl: "minute", sm: true },
+        { t: "Counting by 5s", d: "Between each big number is 5 minutes.\n1=5, 2=10, 3=15...\n6=30, 9=45, 12=0!", tip: "Long hand at 3 = 15 min! It is 2:15!", ex: [2, 15], prac: [8, 45], hl: "both", sm: true },
+      ],
+      ko: [
+        { t: "짧은 바늘을 알아봐요", d: "시계에는 바늘이 두 개 있어요.\n짧고 굵은 바늘이 시침이에요.\n시침은 몇 시인지 알려줘요!", tip: "짧은 바늘이 3을 가리키면 = 3시!", ex: [3, 0], prac: [5, 0], hl: "hour", sm: false },
+        { t: "정각을 읽어봐요", d: "긴 바늘이 12를 가리키면\n정각이에요.\n짧은 바늘이 가리키는 숫자가 시간!", tip: "긴 바늘 → 12, 짧은 바늘 → 7 = 7시!", ex: [7, 0], prac: [10, 0], hl: "both", sm: true },
+        { t: "긴 바늘을 알아봐요", d: "길고 가는 바늘이 분침이에요.\n분침은 몇 분인지 알려줘요!\n12에 있으면 0분(정각)이에요.", tip: "긴 바늘은 분을 알려주는 친구!", ex: [4, 0], prac: [6, 0], hl: "minute", sm: true },
+        { t: "30분 = 반!", d: "긴 바늘이 6을 가리키면\n30분이에요.\n반이라고도 불러요!", tip: "긴 바늘 → 6 = 30분(반)! 9시 반!", ex: [9, 30], prac: [3, 30], hl: "minute", sm: true },
+        { t: "5분씩 세어봐요", d: "큰 숫자 사이는 5분이에요.\n1=5분, 2=10분, 3=15분...\n6=30분, 9=45분, 12=0분!", tip: "긴 바늘 → 3 = 15분! 2시 15분!", ex: [2, 15], prac: [8, 45], hl: "both", sm: true },
+      ],
+    };
+
+    var HC = "#FF6348", MC = "#3742FA", AC = "#FF9F43", SC = "#2ED573";
+    function rand(a, b) { return a + Math.floor(Math.random() * (b - a + 1)); }
+    function shuf(a) { var b = a.slice(); for (var i = b.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = b[i]; b[i] = b[j]; b[j] = t; } return b; }
+    function aToM(a) { return Math.round((((a % 360) + 360) % 360) / 6) % 60; }
+    function aToH(a) { var h = Math.round((((a % 360) + 360) % 360) / 30) % 12; return h === 0 ? 12 : h; }
+    function aDiff(a, b) { return Math.abs(((a - b + 540) % 360) - 180); }
+
+    function useClockSize(ratio) {
+      var r = ratio || 0.95;
+      var getSize = function () { var w = Math.min(window.innerWidth - 24, 640); var h = window.innerHeight; var hMax = h < 700 ? h * 0.42 : h < 950 ? h * 0.48 : w; return Math.round(Math.min(w * r, hMax)); };
+      var _s = useState(function () { return getSize(); }); var s = _s[0], setS = _s[1];
+      useEffect(function () { var fn = function () { setS(getSize()); }; window.addEventListener("resize", fn); return function () { window.removeEventListener("resize", fn); }; }, []);
+      return s;
+    }
+
+    var audioCtx = null;
+    function getAC() { if (!audioCtx) { try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { } } return audioCtx; }
+    function playTick() { var c = getAC(); if (!c) return; var o = c.createOscillator(); var g = c.createGain(); o.connect(g); g.connect(c.destination); o.type = "sine"; o.frequency.value = 1800; g.gain.setValueAtTime(0.15, c.currentTime); g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + 0.06); o.start(c.currentTime); o.stop(c.currentTime + 0.06); }
+    function playTock() { var c = getAC(); if (!c) return; var o = c.createOscillator(); var g = c.createGain(); o.connect(g); g.connect(c.destination); o.type = "sine"; o.frequency.value = 1200; g.gain.setValueAtTime(0.2, c.currentTime); g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + 0.1); o.start(c.currentTime); o.stop(c.currentTime + 0.1); }
+    function playCorrect() {
+      var c = getAC(); if (!c) return;
+      [523, 659, 784].forEach(function (freq, i) {
+        var o = c.createOscillator(); var g = c.createGain(); o.connect(g); g.connect(c.destination);
+        o.type = "sine"; o.frequency.value = freq;
+        var t = c.currentTime + i * 0.12;
+        g.gain.setValueAtTime(0.2, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.2);
+        o.start(t); o.stop(t + 0.2);
+      });
+    }
+    function playWrong() {
+      var c = getAC(); if (!c) return;
+      var o = c.createOscillator(); var g = c.createGain(); o.connect(g); g.connect(c.destination);
+      o.type = "triangle"; o.frequency.value = 250;
+      g.gain.setValueAtTime(0.15, c.currentTime); g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + 0.3);
+      o.start(c.currentTime); o.stop(c.currentTime + 0.3);
+    }
+
+    function Confetti(props) {
+      if (!props.active) return null;
+      var particles = [];
+      for (var i = 0; i < 30; i++) {
+        var colors = ["#FF6B6B", "#FECA57", "#48DBFB", "#FF9FF3", "#54A0FF", "#5F27CD", "#55E6C1"];
+        particles.push({ left: Math.random() * 100, delay: Math.random() * 0.4, dur: 1 + Math.random() * 1.5, color: colors[i % 7], size: 6 + Math.random() * 8, rot: Math.random() * 360 });
+      }
+      return (
+        <div style={{ position: "fixed", inset: 0, pointerEvents: "none", zIndex: 9999 }}>
+          {particles.map(function (p, i) { return <div key={i} style={{ position: "absolute", left: p.left + "%", top: -10, width: p.size, height: p.size * 0.6, background: p.color, borderRadius: 2, transform: "rotate(" + p.rot + "deg)", animation: "confettiFall " + p.dur + "s " + p.delay + "s ease-in forwards" }} />; })}
+        </div>
+      );
+    }
+
+    function Clock(props) {
+      var hour = props.hour, minute = props.minute, size = props.size || 300;
+      var showMin = props.showMin !== false, hl = props.hl || "both";
+      var drag = props.drag || false, onChange = props.onChange;
+      var digital = props.digital || false, fiveL = props.fiveL || false;
+      var lang = props.lang || "en", shake = props.shake || false;
+      var ref = useRef(null); var dRef = useRef(null);
+      var prevMinRef = useRef(minute); var hourRef = useRef(hour);
+      var cx = size / 2, cy = size / 2, r = size * 0.38;
+      var hA = (hour % 12) * 30 + minute * 0.5, mA = minute * 6;
+      useEffect(function () { prevMinRef.current = minute; }, [minute]);
+      useEffect(function () { hourRef.current = hour; }, [hour]);
+      var getA = function (e) { var rect = ref.current.getBoundingClientRect(); var ex = e.touches ? e.touches[0].clientX : e.clientX; var ey = e.touches ? e.touches[0].clientY : e.clientY; return (((Math.atan2(ey - rect.top - rect.height / 2, ex - rect.left - rect.width / 2) * (180 / Math.PI) + 90) % 360) + 360) % 360; };
+      var onDown = function (e) { if (!drag || !ref.current) return; e.preventDefault(); var a = getA(e); var dH = aDiff(a, ((hA % 360) + 360) % 360); var dM = aDiff(a, ((mA % 360) + 360) % 360); dRef.current = (showMin && dM < dH) ? "minute" : "hour"; };
+      useEffect(function () {
+        if (!drag) return;
+        var mv = function (e) {
+          if (!dRef.current || !ref.current || !onChange) return; e.preventDefault(); var a = getA(e);
+          if (dRef.current === "minute") { var nm = aToM(a), pm = prevMinRef.current; if (nm === pm) return; var h = hourRef.current; var hc = false; if (pm > 45 && nm < 15) { h = (h % 12) + 1; if (h > 12) h = 1; hc = true; } else if (pm < 15 && nm > 45) { h = h - 1; if (h < 1) h = 12; hc = true; } prevMinRef.current = nm; hourRef.current = h; if (hc) playTock(); else playTick(); onChange(h, nm); }
+          else { var nH = aToH(a); if (nH !== hourRef.current) { playTock(); hourRef.current = nH; } onChange(nH, prevMinRef.current); }
+        };
+        var up = function () { dRef.current = null; }; var o = { passive: false };
+        window.addEventListener("mousemove", mv, o); window.addEventListener("mouseup", up); window.addEventListener("touchmove", mv, o); window.addEventListener("touchend", up);
+        return function () { window.removeEventListener("mousemove", mv); window.removeEventListener("mouseup", up); window.removeEventListener("touchmove", mv); window.removeEventListener("touchend", up); };
+      }, [drag, onChange]);
+      var drawHand = function (angle, len, color, w, id) {
+        var rad = ((angle - 90) * Math.PI) / 180; var x2 = cx + Math.cos(rad) * len, y2 = cy + Math.sin(rad) * len; var dim = hl !== "both" && hl !== id;
+        return (<g><line x1={cx + 1} y1={cy + 1} x2={x2 + 1} y2={y2 + 1} stroke="rgba(0,0,0,0.1)" strokeWidth={w + 2} strokeLinecap="round" /><line x1={cx} y1={cy} x2={x2} y2={y2} stroke={color} strokeWidth={w} strokeLinecap="round" opacity={dim ? 0.2 : 1} style={{ transition: drag ? "none" : "all 0.6s ease" }} />{drag && <circle cx={x2} cy={y2} r={size * 0.055} fill={color} opacity={0.25} />}</g>);
+      };
+      return (
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
+          <svg ref={ref} width={size} height={size} viewBox={"0 0 " + size + " " + size} style={{ filter: "drop-shadow(0 6px 20px rgba(0,0,0,0.1))", touchAction: "none", cursor: drag ? "grab" : "default", animation: shake ? "shake 0.4s ease-in-out" : "none" }} onMouseDown={onDown} onTouchStart={onDown}>
+            <circle cx={cx} cy={cy} r={r + 12} fill="#f0ebe3" /><circle cx={cx} cy={cy} r={r + 6} fill="#FFFDF7" stroke="#e8e0d4" strokeWidth={2} />
+            {Array.from({ length: 60 }).map(function (_, i) { var hr = i % 5 === 0; var rd = ((i * 6 - 90) * Math.PI) / 180; return <line key={i} x1={cx + Math.cos(rd) * (r - (hr ? 14 : 6))} y1={cy + Math.sin(rd) * (r - (hr ? 14 : 6))} x2={cx + Math.cos(rd) * (r - 1)} y2={cy + Math.sin(rd) * (r - 1)} stroke={hr ? "#5a5049" : "#ccc"} strokeWidth={hr ? 2.5 : 1} />; })}
+            {Array.from({ length: 12 }).map(function (_, i) { var n = i + 1, rd = ((n * 30 - 90) * Math.PI) / 180; return <text key={n} x={cx + Math.cos(rd) * (r - 30)} y={cy + Math.sin(rd) * (r - 30)} textAnchor="middle" dominantBaseline="central" fill="#3d3027" fontSize={size * 0.075} fontFamily="'Gaegu',cursive" fontWeight="700">{n}</text>; })}
+            {fiveL && Array.from({ length: 12 }).map(function (_, i) { var n = i + 1, ms = (n * 5) % 60, rd = ((n * 30 - 90) * Math.PI) / 180; return <text key={"m" + n} x={cx + Math.cos(rd) * (r + 24)} y={cy + Math.sin(rd) * (r + 24)} textAnchor="middle" dominantBaseline="central" fill={MC} fontSize={size * 0.044} fontWeight="700" opacity={0.75}>{ms}</text>; })}
+            {showMin && drawHand(mA, r * 0.78, MC, 4.5, "minute")}
+            {drawHand(hA, r * 0.52, HC, 7.5, "hour")}
+            <circle cx={cx} cy={cy} r={7} fill="#3d3027" /><circle cx={cx} cy={cy} r={3.5} fill="#fff" />
+          </svg>
+          <div style={{ display: "flex", gap: 14, fontSize: 15, fontWeight: 600 }}>
+            <span style={{ color: HC }}>● {tx("hourH", lang)}</span>
+            {showMin && <span style={{ color: MC }}>● {tx("minH", lang)}</span>}
+          </div>
+          {digital && <div style={{ background: "#1e272e", borderRadius: 16, padding: "12px 28px", fontFamily: "'Bagel Fat One',cursive", fontSize: 34, color: "#7bed9f", letterSpacing: 4, boxShadow: "inset 0 2px 8px rgba(0,0,0,0.5)", border: "3px solid #3d3027" }}>{hour} : {String(minute).padStart(2, "0")}</div>}
+        </div>
+      );
+    }
+
+    function LangPicker(props) {
+      var lang = props.lang, setLang = props.setLang;
+      var _o = useState(false), open = _o[0], setOpen = _o[1];
+      var cur = LANGS.find(function (l) { return l.code === lang; });
+      return (<div style={{ position: "fixed", top: 10, right: 10, zIndex: 9999 }}>
+        <button onClick={function () { setOpen(!open); }} style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 12px", background: "rgba(255,255,255,0.95)", border: "2px solid #e0d6c8", borderRadius: 12, cursor: "pointer", fontSize: 14, boxShadow: "0 3px 12px rgba(0,0,0,0.1)" }}><span style={{ fontSize: 18 }}>{cur.flag}</span><span style={{ color: "#3d3027", fontWeight: 600 }}>{cur.name}</span><span style={{ fontSize: 10, color: "#aaa" }}>{open ? "▲" : "▼"}</span></button>
+        {open && <div><div onClick={function () { setOpen(false); }} style={{ position: "fixed", inset: 0, zIndex: -1 }} />
+          <div style={{ position: "absolute", top: "calc(100% + 4px)", right: 0, background: "#fff", borderRadius: 14, padding: 4, boxShadow: "0 8px 30px rgba(0,0,0,0.18)", border: "2px solid #f0ebe3", minWidth: 170, maxHeight: "55vh", overflowY: "auto" }}>
+            {LANGS.map(function (l) { return <button key={l.code} onClick={function () { setLang(l.code); setOpen(false); }} style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "9px 12px", border: "none", borderRadius: 10, background: lang === l.code ? AC + "20" : "transparent", cursor: "pointer", fontSize: 14, textAlign: "left" }}><span style={{ fontSize: 20 }}>{l.flag}</span><span style={{ color: "#3d3027", fontWeight: lang === l.code ? 700 : 400 }}>{l.name}</span>{lang === l.code && <span style={{ marginLeft: "auto", color: AC }}>✓</span>}</button>; })}
+          </div></div>}
+      </div>);
+    }
+
+    function Badge(props) { return <div style={{ background: "#fff", borderRadius: 14, padding: "5px 16px", border: "2px solid " + props.c, boxShadow: "0 3px 12px " + props.c + "30" }}><div style={{ fontSize: 11, color: "#888" }}>{props.l}</div><div style={{ fontSize: 20, fontFamily: "'Gaegu',cursive", fontWeight: 700, color: "#3d3027" }}>{props.v}</div></div>; }
+    function Btn(props) { return <button onClick={props.onClick} style={{ padding: "14px 32px", fontSize: 18, fontWeight: 700, background: props.bg, color: props.c, border: "none", borderRadius: 50, cursor: "pointer", boxShadow: "0 4px 15px rgba(0,0,0,0.1)", ...(props.style || {}) }}>{props.children}</button>; }
+    function BigBtn(props) { return <button onClick={props.onClick} style={{ padding: "20px 28px", fontSize: 20, fontWeight: 700, background: props.bg, color: "#fff", border: "none", borderRadius: 20, cursor: "pointer", boxShadow: "0 6px 20px " + props.bg + "40", textAlign: "center" }}>{props.children}</button>; }
+
+    function LearnMode(props) {
+      var lang = props.lang, onHome = props.onHome;
+      var _s = useState(0), step = _s[0], setStep = _s[1];
+      var _p = useState(false), practicing = _p[0], setPracticing = _p[1];
+      var _ph = useState(12), pH = _ph[0], setPH = _ph[1];
+      var _pm = useState(0), pM = _pm[0], setPM = _pm[1];
+      var _pf = useState(null), pFb = _pf[0], setPFb = _pf[1];
+      var _conf = useState(false), showConf = _conf[0], setShowConf = _conf[1];
+      var _shk = useState(false), shaking = _shk[0], setShaking = _shk[1];
+      var clockSize = useClockSize(0.85);
+      var lessons = LESSONS_DATA[lang] || LESSONS_DATA.en;
+      var ls = lessons[step];
+
+      var startPractice = function () { setPracticing(true); setPH(12); setPM(0); setPFb(null); setShowConf(false); };
+      var checkPractice = function () {
+        var ok = pH === ls.prac[0] && pM === ls.prac[1];
+        setPFb(ok);
+        if (ok) { playCorrect(); setShowConf(true); setTimeout(function () { setShowConf(false); }, 2000); }
+        else { playWrong(); setShaking(true); setTimeout(function () { setShaking(false); setPH(ls.prac[0]); setPM(ls.prac[1]); }, 600); }
+      };
+      var goNext = function () { setPracticing(false); setPFb(null); setShowConf(false); if (step < lessons.length - 1) setStep(step + 1); else onHome(); };
+
+      if (practicing) return (
+        <div style={{ textAlign: "center", padding: "0 16px" }}>
+          <Confetti active={showConf} />
+          <h2 style={{ fontFamily: "'Gaegu',cursive", fontSize: 24, color: AC, margin: "0 0 4px" }}>{tx("tryIt", lang)}</h2>
+          <p style={{ fontSize: 17, color: "#3d3027", fontWeight: 700, margin: "0 0 8px" }}>{tx("makeTime", lang)} <span style={{ color: HC, fontSize: 22 }}>{fmtTime(ls.prac[0], ls.prac[1], lang)}</span></p>
+          <Clock hour={pH} minute={pM} size={clockSize} drag={pFb === null} showMin={ls.sm} onChange={function (h, m) { setPH(h); setPM(m); }} fiveL={step >= 4} lang={lang} shake={shaking} />
+          {pFb === true && <div style={{ fontSize: 28, margin: "10px 0", color: SC }}>🎉 {tx("correct", lang)}</div>}
+          {pFb === false && <div style={{ fontSize: 20, margin: "10px 0", color: "#e17055" }}>😅 {fmtTime(ls.prac[0], ls.prac[1], lang)}</div>}
+          <div style={{ display: "flex", gap: 12, justifyContent: "center", marginTop: 8 }}>
+            {pFb === null && <Btn bg={SC} c="#fff" onClick={checkPractice}>✅ {tx("submit", lang)}</Btn>}
+            {pFb !== null && <Btn bg={AC} c="#fff" onClick={goNext}>{step < lessons.length - 1 ? tx("next", lang) : tx("done", lang)}</Btn>}
+          </div>
+        </div>
+      );
+
+      return (
+        <div style={{ textAlign: "center", padding: "0 16px" }}>
+          <div style={{ display: "flex", gap: 6, justifyContent: "center", marginBottom: 16 }}>
+            {lessons.map(function (_, i) { return <div key={i} style={{ width: 36, height: 6, borderRadius: 3, background: i <= step ? AC : "#e0d6c8", transition: "all 0.3s" }} />; })}
+          </div>
+          <h2 style={{ fontFamily: "'Gaegu',cursive", fontSize: 28, color: "#3d3027", margin: "0 0 8px" }}>{ls.t}</h2>
+          <div style={{ background: "rgba(255,255,255,0.7)", borderRadius: 20, padding: "14px 20px", marginBottom: 12, border: "2px solid #f0ebe3" }}>
+            <p style={{ fontSize: 18, color: "#5a5049", lineHeight: 1.8, margin: 0, whiteSpace: "pre-line" }}>{ls.d}</p>
+          </div>
+          <Clock hour={ls.ex[0]} minute={ls.ex[1]} size={clockSize} showMin={ls.sm} hl={ls.hl} fiveL={step >= 4} lang={lang} />
+          <div style={{ background: AC + "18", border: "2px dashed " + AC, borderRadius: 16, padding: "10px 14px", margin: "10px 0" }}>
+            <p style={{ fontSize: 16, color: HC, margin: 0, fontWeight: 700 }}>💡 {ls.tip}</p>
+          </div>
+          <div style={{ display: "flex", gap: 12, justifyContent: "center" }}>
+            {step > 0 && <Btn bg="#e0d6c8" c="#3d3027" onClick={function () { setStep(step - 1); }}>{tx("prev", lang)}</Btn>}
+            <Btn bg={SC} c="#fff" onClick={startPractice}>🖐️ {tx("tryIt", lang)}</Btn>
+          </div>
+        </div>
+      );
+    }
+
+    function PlayMode(props) {
+      var lang = props.lang, onHome = props.onHome;
+      var _h = useState(12), hour = _h[0], setHour = _h[1];
+      var _m = useState(0), minute = _m[0], setMinute = _m[1];
+      var clockSize = useClockSize(1.0);
+      return (
+        <div style={{ textAlign: "center", padding: "0 12px" }}>
+          <p style={{ fontSize: 18, color: "#5a5049", margin: "0 0 8px" }}>🖐️ {tx("drag", lang)}</p>
+          <Clock hour={hour} minute={minute} size={clockSize} drag={true} showMin={true} onChange={function (h, m) { setHour(h); setMinute(m); }} fiveL={true} lang={lang} />
+          <div style={{ marginTop: 10, background: "rgba(255,255,255,0.8)", borderRadius: 18, padding: "12px 20px", border: "2px solid #f0ebe3", display: "inline-block" }}>
+            <p style={{ fontSize: 26, fontFamily: "'Gaegu',cursive", fontWeight: 700, color: "#3d3027", margin: 0 }}>{fmtTime(hour, minute, lang)}</p>
+          </div><br />
+          <Btn bg="#e0d6c8" c="#3d3027" onClick={onHome} style={{ marginTop: 10 }}>🏠 {tx("home", lang)}</Btn>
+        </div>
+      );
+    }
+
+    var QL = [function () { return { h: rand(1, 12), m: 0 }; }, function () { return { h: rand(1, 12), m: Math.random() > 0.5 ? 0 : 30 }; }, function () { return { h: rand(1, 12), m: [0, 15, 30, 45][rand(0, 3)] }; }, function () { return { h: rand(1, 12), m: rand(0, 11) * 5 }; }];
+
+    function QuizMode(props) {
+      var lang = props.lang, onHome = props.onHome;
+      var clockSize = useClockSize(1.0);
+      var _lv = useState(0), lv = _lv[0], setLv = _lv[1];
+      var _mode = useState(null), mode = _mode[0], setMode = _mode[1];
+      var _q = useState(null), q = _q[0], setQ = _q[1];
+      var _opts = useState([]), opts = _opts[0], setOpts = _opts[1];
+      var _sel = useState(null), sel = _sel[0], setSel = _sel[1];
+      var _fb = useState(null), fb = _fb[0], setFb = _fb[1];
+      var _sc = useState(0), sc = _sc[0], setSc = _sc[1];
+      var _rd = useState(0), rd = _rd[0], setRd = _rd[1];
+      var _sH = useState(12), sH = _sH[0], setSH = _sH[1];
+      var _sM = useState(0), sM = _sM[0], setSM = _sM[1];
+      var _dn = useState(false), dn = _dn[0], setDn = _dn[1];
+      var _conf = useState(false), showConf = _conf[0], setShowConf = _conf[1];
+      var _shk = useState(false), shaking = _shk[0], setShaking = _shk[1];
+      var total = 5;
+      var lvLabels = (TT.lvl[lang] || TT.lvl.en);
+
+      var newRead = useCallback(function () {
+        var nq = QL[lv](); var cor = fmtTime(nq.h, nq.m, lang);
+        var os = new Set([cor]); var tries = 0;
+        while (os.size < 4 && tries < 50) { var f = QL[lv](); os.add(fmtTime(f.h, f.m, lang)); tries++; }
+        setQ(nq); setOpts(shuf(Array.from(os))); setSel(null); setFb(null); setShowConf(false);
+      }, [lv, lang]);
+      var newSet = useCallback(function () { setQ(QL[lv]()); setSH(12); setSM(0); setDn(false); setFb(null); setShowConf(false); }, [lv]);
+      useEffect(function () { if (mode === "read") newRead(); else if (mode === "set") newSet(); }, [mode]);
+
+      var doRead = function (opt) {
+        if (fb !== null) return; setSel(opt);
+        var ok = opt === fmtTime(q.h, q.m, lang); setFb(ok);
+        if (ok) { setSc(sc + 1); playCorrect(); setShowConf(true); setTimeout(function () { setShowConf(false); }, 1500); }
+        else { playWrong(); setShaking(true); setTimeout(function () { setShaking(false); }, 400); }
+        setTimeout(function () { if (rd + 1 >= total) { setRd(rd + 1); return; } setRd(rd + 1); newRead(); }, 2000);
+      };
+      var doSet = function () {
+        if (dn) return; setDn(true);
+        var ok = sH === q.h && sM === q.m; setFb(ok);
+        if (ok) { setSc(sc + 1); playCorrect(); setShowConf(true); setTimeout(function () { setShowConf(false); }, 1500); }
+        else { playWrong(); setShaking(true); setTimeout(function () { setShaking(false); setSH(q.h); setSM(q.m); }, 600); }
+        setTimeout(function () { if (rd + 1 >= total) { setRd(rd + 1); return; } setRd(rd + 1); newSet(); }, 2500);
+      };
+
+      if (mode === null) return (
+        <div style={{ textAlign: "center", padding: "0 16px" }}>
+          <h2 style={{ fontFamily: "'Gaegu',cursive", fontSize: 26, color: "#3d3027", margin: "0 0 16px" }}>{tx("diff", lang)}</h2>
+          <div style={{ display: "flex", gap: 4, justifyContent: "center", marginBottom: 24, flexWrap: "nowrap" }}>
+            {lvLabels.map(function (lb, i) { return <button key={i} onClick={function () { setLv(i); }} style={{ padding: "10px 12px", fontSize: 14, borderRadius: 30, fontWeight: 700, border: lv === i ? "3px solid " + AC : "3px solid #e0d6c8", background: lv === i ? AC + "20" : "#fff", color: lv === i ? AC : "#5a5049", cursor: "pointer", whiteSpace: "nowrap", flex: "0 1 auto" }}>{lb}</button>; })}
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 12, maxWidth: 300, margin: "0 auto" }}>
+            <BigBtn bg={HC} onClick={function () { setMode("read"); setSc(0); setRd(0); }}>🔍 {tx("readQ", lang)}</BigBtn>
+            <BigBtn bg={MC} onClick={function () { setMode("set"); setSc(0); setRd(0); }}>🖐️ {tx("setQ", lang)}</BigBtn>
+          </div>
+          <Btn bg="#e0d6c8" c="#3d3027" onClick={onHome} style={{ marginTop: 24 }}>🏠 {tx("home", lang)}</Btn>
+        </div>
+      );
+
+      if (rd >= total) {
+        var stars = sc >= 5 ? 3 : sc >= 3 ? 2 : 1;
+        return (<div style={{ textAlign: "center", padding: "20px 16px" }}>
+          <Confetti active={true} />
+          <div style={{ fontSize: 56, marginBottom: 12 }}>{"⭐".repeat(stars)}</div>
+          <p style={{ fontSize: 20, color: "#5a5049" }}>{sc} / {total} {tx("correct", lang)}</p>
+          <div style={{ display: "flex", gap: 12, justifyContent: "center", marginTop: 24 }}>
+            <Btn bg={AC} c="#fff" onClick={function () { setMode(null); setSc(0); setRd(0); }}>{tx("again", lang)}</Btn>
+            <Btn bg="#e0d6c8" c="#3d3027" onClick={onHome}>🏠 {tx("home", lang)}</Btn>
+          </div>
+        </div>);
+      }
+      if (!q) return null;
+
+      if (mode === "read") return (
+        <div style={{ textAlign: "center", padding: "0 8px" }}>
+          <Confetti active={showConf} />
+          <div style={{ display: "flex", justifyContent: "center", gap: 12, marginBottom: 6 }}>
+            <Badge l={tx("score", lang)} v={sc} c="#FECA57" />
+            <Badge l={tx("qNum", lang)} v={(rd + 1) + "/" + total} c="#48DBFB" />
+          </div>
+          <p style={{ fontSize: 20, fontFamily: "'Gaegu',cursive", fontWeight: 700, color: "#3d3027", margin: "0 0 4px" }}>{tx("whatTime", lang)} 🤔</p>
+          <Clock hour={q.h} minute={q.m} size={clockSize} showMin={true} fiveL={true} lang={lang} shake={shaking} />
+          {fb !== null && <div style={{ fontSize: 22, margin: "6px 0", color: fb ? SC : "#e17055", fontWeight: 700 }}>{fb ? ("🎉 " + tx("correct", lang)) : ("😅 " + fmtTime(q.h, q.m, lang))}</div>}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 8, margin: "6px auto 0" }}>
+            {opts.map(function (op, i) { var cor = fmtTime(q.h, q.m, lang); var isC = fb !== null && op === cor; var isW = fb !== null && op === sel && !fb; return <button key={i} onClick={function () { doRead(op); }} style={{ padding: "12px 4px", fontSize: 15, fontWeight: 700, border: isC ? "3px solid " + SC : isW ? "3px solid #e17055" : "3px solid #f0ebe3", borderRadius: 14, cursor: fb !== null ? "default" : "pointer", background: isC ? SC + "20" : isW ? "#ffeaeb" : "#fff", color: "#3d3027" }}>{op}</button>; })}
+          </div>
+        </div>
+      );
+
+      return (
+        <div style={{ textAlign: "center", padding: "0 8px" }}>
+          <Confetti active={showConf} />
+          <div style={{ display: "flex", justifyContent: "center", gap: 12, marginBottom: 6 }}>
+            <Badge l={tx("score", lang)} v={sc} c="#FECA57" />
+            <Badge l={tx("qNum", lang)} v={(rd + 1) + "/" + total} c="#48DBFB" />
+          </div>
+          <div style={{ background: "#1e272e", borderRadius: 14, padding: "10px 24px", display: "inline-block", marginBottom: 6, border: "3px solid #3d3027" }}>
+            <span style={{ fontFamily: "'Bagel Fat One',cursive", fontSize: 28, color: "#7bed9f", letterSpacing: 3 }}>{fmtTime(q.h, q.m, lang)}</span>
+          </div>
+          <p style={{ fontSize: 15, color: "#5a5049", margin: "0 0 4px" }}>{tx("setTime", lang)}</p>
+          <Clock hour={sH} minute={sM} size={clockSize} drag={!dn} showMin={true} onChange={function (h, m) { setSH(h); setSM(m); }} fiveL={true} lang={lang} shake={shaking} />
+          {fb !== null && <div style={{ fontSize: 22, margin: "6px 0", color: fb ? SC : "#e17055", fontWeight: 700 }}>{fb ? ("🎉 " + tx("correct", lang)) : ("😅 " + fmtTime(q.h, q.m, lang))}</div>}
+          {!dn && <Btn bg={SC} c="#fff" onClick={doSet} style={{ marginTop: 6 }}>✅ {tx("submit", lang)}</Btn>}
+        </div>
+      );
+    }
+
+    function LiveClock(props) {
+      var _t = useState(new Date()), time = _t[0], setTime = _t[1];
+      useEffect(function () { var id = setInterval(function () { setTime(new Date()); }, 1000); return function () { clearInterval(id); }; }, []);
+      return (<div style={{ textAlign: "center" }}><p style={{ fontSize: 13, color: "#8a7e72", margin: "0 0 8px" }}>{tx("now", props.lang)}</p><Clock hour={time.getHours() % 12 || 12} minute={time.getMinutes()} size={180} digital={true} showMin={true} lang={props.lang} /></div>);
+    }
+
+    function App() {
+      var _l = useState("ko"), lang = _l[0], setLang = _l[1];
+      var _s = useState("home"), scr = _s[0], setScr = _s[1];
+      var menus = [
+        { id: "learn", emoji: "📖", tk: "learn", dk: "learnD", color: HC },
+        { id: "play", emoji: "🖐️", tk: "play", dk: "playD", color: MC },
+        { id: "quiz", emoji: "🧩", tk: "quiz", dk: "quizD", color: AC },
+      ];
+      return (
+        <div style={{ minHeight: "100vh", background: "linear-gradient(170deg,#fef9ef 0%,#fdecd0 40%,#f8e8d6 100%)", position: "relative", userSelect: "none", WebkitUserSelect: "none", WebkitTouchCallout: "none" }}>
+          <LangPicker lang={lang} setLang={setLang} />
+          <div style={{ maxWidth: 640, margin: "0 auto", padding: "14px 16px", position: "relative", zIndex: 1 }}>
+            {scr !== "home" ? (
+              <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 6 }}>
+                <button onClick={function () { setScr("home"); }} style={{ background: "rgba(255,255,255,0.8)", border: "2px solid #e0d6c8", borderRadius: 50, width: 40, height: 40, fontSize: 18, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>←</button>
+                <h1 style={{ fontFamily: "'Gaegu',cursive", fontSize: 24, color: "#3d3027", margin: 0 }}>{tx(scr, lang)}</h1>
+              </div>
+            ) : (
+              <div style={{ textAlign: "center", marginBottom: 20 }}>
+                <div style={{ fontSize: 40, display: "inline-block" }}>🕰️</div>
+                <h1 style={{ fontFamily: "'Gaegu',cursive", fontSize: 38, color: "#3d3027", margin: "4px 0 0" }}>{tx("appTitle", lang)}</h1>
+                <p style={{ color: "#8a7e72", fontSize: 18, margin: "4px 0 0" }}>{tx("sub", lang)} ✨</p>
+              </div>
+            )}
+            {scr === "home" && (
+              <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                {menus.map(function (item) { return (<button key={item.id} onClick={function () { setScr(item.id); }} style={{ display: "flex", alignItems: "center", gap: 16, padding: "20px 22px", background: "rgba(255,255,255,0.9)", border: "2px solid #f0ebe3", borderRadius: 22, cursor: "pointer", boxShadow: "0 6px 24px rgba(0,0,0,0.05)", textAlign: "left" }}><div style={{ fontSize: 36, width: 60, height: 60, display: "flex", alignItems: "center", justifyContent: "center", background: item.color + "12", borderRadius: 16, flexShrink: 0 }}>{item.emoji}</div><div><div style={{ fontFamily: "'Gaegu',cursive", fontSize: 26, fontWeight: 700, color: "#3d3027" }}>{tx(item.tk, lang)}</div><div style={{ fontSize: 16, color: "#8a7e72", marginTop: 2 }}>{tx(item.dk, lang)}</div></div><div style={{ marginLeft: "auto", fontSize: 20, color: "#ccc" }}>▶</div></button>); })}
+                <div style={{ marginTop: 8 }}><LiveClock lang={lang} /></div>
+              </div>
+            )}
+            {scr === "learn" && <LearnMode lang={lang} onHome={function () { setScr("home"); }} />}
+            {scr === "play" && <PlayMode lang={lang} onHome={function () { setScr("home"); }} />}
+            {scr === "quiz" && <QuizMode lang={lang} onHome={function () { setScr("home"); }} />}
+          </div>
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById("root"));
+    root.render(<App />);
+  </script>
+</body>
+</html>
