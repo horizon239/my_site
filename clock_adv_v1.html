@@ -397,7 +397,7 @@
     function LiveClock(props) {
       var _t = useState(new Date()), time = _t[0], setTime = _t[1];
       useEffect(function () { var id = setInterval(function () { setTime(new Date()); }, 1000); return function () { clearInterval(id); }; }, []);
-      return (<div style={{ textAlign: "center" }}><p style={{ fontSize: 13, color: "#8a7e72", margin: "0 0 8px" }}>{tx("now", props.lang)}</p><Clock hour={time.getHours() % 12 || 12} minute={time.getMinutes()} size={180} digital={true} showMin={true} lang={props.lang} /></div>);
+      return (<div style={{ textAlign: "center" }}><p style={{ fontSize: 12, color: "#8a7e72", margin: "0 0 6px" }}>{tx("now", props.lang)}</p><Clock hour={time.getHours() % 12 || 12} minute={time.getMinutes()} size={130} digital={true} showMin={true} lang={props.lang} /></div>);
     }
 
     function App() {
@@ -419,6 +419,9 @@
               </div>
             ) : (
               <div style={{ textAlign: "center", marginBottom: 20 }}>
+                <div style={{ textAlign: "left", marginBottom: 8 }}>
+                  <a href="index.html" style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12, color: "#aaa", textDecoration: "none", background: "rgba(255,255,255,0.6)", border: "1px solid #e0d6c8", borderRadius: 20, padding: "5px 12px" }}>← Just Play</a>
+                </div>
                 <div style={{ fontSize: 40, display: "inline-block" }}>🕰️</div>
                 <h1 style={{ fontFamily: "'Gaegu',cursive", fontSize: 38, color: "#3d3027", margin: "4px 0 0" }}>{tx("appTitle", lang)}</h1>
                 <p style={{ color: "#8a7e72", fontSize: 18, margin: "4px 0 0" }}>{tx("sub", lang)} ✨</p>
