@@ -121,8 +121,8 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Noto S
 var LANGS=[{code:"ko",name:"한국어",flag:"🇰🇷"},{code:"en",name:"English",flag:"🇺🇸"},{code:"ja",name:"日本語",flag:"🇯🇵"},{code:"zh",name:"中文",flag:"🇨🇳"},{code:"es",name:"Español",flag:"🇪🇸"},{code:"fr",name:"Français",flag:"🇫🇷"},{code:"de",name:"Deutsch",flag:"🇩🇪"},{code:"pt",name:"Português",flag:"🇧🇷"},{code:"hi",name:"हिन्दी",flag:"🇮🇳"},{code:"ar",name:"العربية",flag:"🇸🇦"}];
 var I18N={
   home:{ko:"홈으로",en:"Home",ja:"ホームへ",zh:"返回首页",es:"Inicio",fr:"Accueil",de:"Startseite",pt:"Início",hi:"होम",ar:"الرئيسية"},
-  sub:{ko:"주사위를 잡고 흔든 뒤 던져보세요!",en:"Grab, shake, and throw the dice!",ja:"サイコロを掴んで振って投げよう！",zh:"抓住骰子摇一摇再扔出去！",es:"¡Agarra, agita y lanza los dados!",fr:"Attrapez, secouez et lancez !",de:"Greifen, schütteln und werfen!",pt:"Pegue, sacuda e jogue!",hi:"पासा पकड़ें, हिलाएं और फेंकें!",ar:"أمسك النرد وحركه ثم ارمِه!"},
-  hint:{ko:"주사위를 터치해서 흔들고 놓으세요",en:"Touch the dice, shake and release",ja:"サイコロをタッチして振って離そう",zh:"触摸骰子，摇晃后松开",es:"Toca, agita y suelta los dados",fr:"Touchez, secouez et relâchez",de:"Berühren, schütteln und loslassen",pt:"Toque, sacuda e solte os dados",hi:"पासा छुएं, हिलाएं और छोड़ें",ar:"المس النرد، حركه ثم أفلته"},
+  sub:{ko:"터치하면 셔플, 놓으면 던져져요!",en:"Hold to shuffle, release to throw!",ja:"タッチでシャッフル、離して投げよう！",zh:"按住摇骰子，松开投出去！",es:"¡Mantén para mezclar, suelta para lanzar!",fr:"Maintenez pour mélanger, relâchez !",de:"Halten zum Mischen, loslassen zum Werfen!",pt:"Segure para misturar, solte para jogar!",hi:"दबाकर शफ़ल, छोड़कर फेंकें!",ar:"امسك للخلط، أفلت للرمي!"},
+  hint:{ko:"꾹 누르고 드래그하면 세게 던져져요",en:"Hold and drag to throw harder",ja:"長押し＆ドラッグで強く投げよう",zh:"长按拖动可以用力投",es:"Mantén y arrastra para lanzar fuerte",fr:"Maintenez et glissez pour lancer fort",de:"Halten und ziehen für stärkeren Wurf",pt:"Segure e arraste para jogar forte",hi:"दबाकर खींचें, ज़ोर से फेंकें",ar:"اضغط واسحب للرمي بقوة"},
   total:{ko:"합계",en:"Total",ja:"合計",zh:"总计",es:"Total",fr:"Total",de:"Gesamt",pt:"Total",hi:"कुल",ar:"المجموع"},
   history:{ko:"기록",en:"History",ja:"履歴",zh:"历史",es:"Historial",fr:"Historique",de:"Verlauf",pt:"Histórico",hi:"इतिहास",ar:"السجل"},
   title:{ko:"주사위 굴리기",en:"Dice Roller",ja:"ダイスローラー",zh:"掷骰子",es:"Lanzar Dados",fr:"Lanceur de Dés",de:"Würfelwerfer",pt:"Rolar Dados",hi:"पासा फेंको",ar:"رمي النرد"},
@@ -487,175 +487,153 @@ var dragPlane=new THREE.Plane(new THREE.Vector3(0,1,0),0); // y=0 수평면
 var dragOffset=new THREE.Vector3();
 var intersection=new THREE.Vector3();
 
-// 속도 추적
-var prevMouse={x:0,y:0,t:0};
-var velocityHistory=[];
-var GRAB_HEIGHT=3.0; // 잡았을 때 들어올리는 높이
+var GRAB_HEIGHT=3.0;
+var shakeAnimId=null;
+var dragCenterX=0,dragCenterZ=0; // 드래그 중심 위치
 
 function getPointerPos(e){
   var rect=canvas.getBoundingClientRect();
-  var clientX,clientY;
-  if(e.touches){clientX=e.touches[0].clientX;clientY=e.touches[0].clientY}
-  else{clientX=e.clientX;clientY=e.clientY}
-  return{
-    x:((clientX-rect.left)/rect.width)*2-1,
-    y:-((clientY-rect.top)/rect.height)*2+1
-  };
+  var cx,cy;
+  if(e.touches){cx=e.touches[0].clientX;cy=e.touches[0].clientY}
+  else{cx=e.clientX;cy=e.clientY}
+  return{x:((cx-rect.left)/rect.width)*2-1,y:-((cy-rect.top)/rect.height)*2+1};
 }
 
-var tapStartTime=0;
+function screenToTable(px,py){
+  mouse.set(px,py);
+  raycaster.setFromCamera(mouse,camera);
+  if(raycaster.ray.intersectPlane(dragPlane,intersection)){
+    return{x:intersection.x,z:intersection.z};
+  }
+  return{x:0,z:0};
+}
 
 function onPointerDown(e){
   if(isRolling)return;
   e.preventDefault();
+
+  isDragging=true;
+  document.getElementById('resultNum').classList.remove('show');
+  document.getElementById('resultTotal').classList.remove('show');
+
+  // 드래그 시작 위치
   var p=getPointerPos(e);
-  mouse.set(p.x,p.y);
-  raycaster.setFromCamera(mouse,camera);
+  dragPlane.constant=-GRAB_HEIGHT;
+  var tbl=screenToTable(p.x,p.y);
+  dragCenterX=tbl.x;dragCenterZ=tbl.z;
+  prevDragPos={x:tbl.x,z:tbl.z,t:performance.now()};
+  dragVelHistory=[];
 
-  var hits=raycaster.intersectObjects(diceMeshes);
-  if(hits.length>0){
-    isDragging=true;
-    tapStartTime=performance.now();
-    // 결과 숨기기
-    document.getElementById('resultNum').classList.remove('show');
-    document.getElementById('resultTotal').classList.remove('show');
+  // 주사위를 공중에 띄움
+  diceBodies.forEach(function(b){
+    b.mass=0;b.updateMassProperties();
+    b.velocity.setZero();
+  });
 
-    // 모든 주사위를 잡음 — mass를 0으로 (키네마틱)
-    diceBodies.forEach(function(b){
-      b.mass=0;b.updateMassProperties();
-      b.velocity.setZero();b.angularVelocity.setZero();
-    });
+  // 셔플 애니메이션 시작
+  var shakeStart=performance.now();
+  if(shakeAnimId)cancelAnimationFrame(shakeAnimId);
 
-    // 드래그 평면 높이 설정
-    dragPlane.constant=-GRAB_HEIGHT;
+  function shakeLoop(){
+    if(!isDragging){shakeAnimId=null;return}
+    var t=performance.now()-shakeStart;
+    var speed=Math.min(1,t/400);
 
-    velocityHistory=[];
-    prevMouse={x:p.x,y:p.y,t:performance.now()};
+    for(var i=0;i<diceBodies.length;i++){
+      var b=diceBodies[i];
+      var phase=t*0.0015+i*2.1;
+      var r=0.6+diceCount*0.2;
+      var ox=Math.sin(phase*(2+i*0.4))*r*(0.4+i*0.15);
+      var oz=Math.cos(phase*(1.8+i*0.5)+i)*r*0.35;
+      var oy=Math.sin(phase*1.5+i)*0.2;
+      b.position.set(dragCenterX+ox,GRAB_HEIGHT+oy,dragCenterZ+oz);
+      b.angularVelocity.set(
+        (4+speed*6)*Math.sin(phase+i),
+        (4+speed*6)*Math.cos(phase*1.3+i*0.8),
+        (3+speed*5)*Math.sin(phase*0.8+i*1.5)
+      );
+    }
+    shakeAnimId=requestAnimationFrame(shakeLoop);
   }
+  shakeLoop();
+  playRumble();
 }
+
+// 드래그 속도 추적
+var dragVelHistory=[];
+var prevDragPos={x:0,z:0,t:0};
 
 function onPointerMove(e){
   if(!isDragging)return;
   e.preventDefault();
   var p=getPointerPos(e);
-  mouse.set(p.x,p.y);
-  raycaster.setFromCamera(mouse,camera);
+  var tbl=screenToTable(p.x,p.y);
+  var limX=TW/2-1.5,limZ=TH/2-1.5;
+  var newX=Math.max(-limX,Math.min(limX,tbl.x));
+  var newZ=Math.max(-limZ,Math.min(limZ,tbl.z));
 
-  if(raycaster.ray.intersectPlane(dragPlane,intersection)){
-    var now=performance.now();
-    var dt=now-prevMouse.t;
-
-    // 속도 기록 (월드 좌표 기반)
-    if(dt>0){
-      velocityHistory.push({
-        vx:(p.x-prevMouse.x)/dt*1000,
-        vy:(p.y-prevMouse.y)/dt*1000,
-        t:now
-      });
-      // 최근 100ms만 유지
-      while(velocityHistory.length>0&&now-velocityHistory[0].t>100)velocityHistory.shift();
-    }
-    prevMouse={x:p.x,y:p.y,t:now};
-
-    // 주사위를 마우스 위치로 이동 + 약간 흔들리는 회전
-    var cx=intersection.x,cz=intersection.z;
-    var offsets=[
-      [[0,0]],
-      [[-1,0],[1,0]],
-      [[-1.2,0.4],[0,-0.4],[1.2,0.4]],
-      [[-1.2,-0.7],[1.2,-0.7],[-1.2,0.7],[1.2,0.7]],
-      [[-1.5,-0.7],[0,-0.7],[1.5,-0.7],[-0.8,0.7],[0.8,0.7]]
-    ];
-    var ofs=offsets[diceCount-1];
-
-    for(var i=0;i<diceBodies.length;i++){
-      var ox=Array.isArray(ofs[i])?ofs[i][0]:ofs[i];
-      var oz=Array.isArray(ofs[i])?ofs[i][1]:0;
-      diceBodies[i].position.set(cx+ox,GRAB_HEIGHT,cz+oz);
-      // 흔드는 동안 약간 회전
-      var shake=Math.sin(now*0.015+i*2)*0.15;
-      diceBodies[i].angularVelocity.set(
-        (Math.random()-0.5)*8,
-        (Math.random()-0.5)*8,
-        shake*10
-      );
-    }
+  // 속도 기록
+  var now=performance.now();
+  var dt=now-prevDragPos.t;
+  if(dt>0){
+    dragVelHistory.push({
+      vx:(newX-prevDragPos.x)/dt*1000,
+      vz:(newZ-prevDragPos.z)/dt*1000,
+      t:now
+    });
+    while(dragVelHistory.length>0&&now-dragVelHistory[0].t>150)dragVelHistory.shift();
   }
+  prevDragPos={x:newX,z:newZ,t:now};
+  dragCenterX=newX;
+  dragCenterZ=newZ;
 }
 
-function quickThrow(){
-  // 탭 한번 — 랜덤 방향으로 자동 던지기
-  isRolling=true;playRumble();
-  diceBodies.forEach(function(b){
-    b.mass=1;b.updateMassProperties();
-    b.position.y=GRAB_HEIGHT+1;
-    b.velocity.set((Math.random()-0.5)*4,5+Math.random()*3,-3-Math.random()*3);
-    b.angularVelocity.set((Math.random()-0.5)*20,(Math.random()-0.5)*20,(Math.random()-0.5)*20);
-    b.linearDamping=0.35;b.angularDamping=0.4;
-  });
-  waitForSettle();
-}
-
-function onPointerUp(e){
-  if(!isDragging)return;
-  isDragging=false;
-
-  var tapDuration=performance.now()-tapStartTime;
-
-  // 짧은 탭 (200ms 이내, 드래그 거의 없음) → 바로 던지기
-  if(tapDuration<200&&velocityHistory.length<3){
-    quickThrow();
-    return;
-  }
-
-  // 평균 속도 계산
-  var avgVx=0,avgVy=0,count=velocityHistory.length;
-  if(count>0){
-    velocityHistory.forEach(function(v){avgVx+=v.vx;avgVy+=v.vy});
-    avgVx/=count;avgVy/=count;
-  }
-
-  var throwForce=Math.sqrt(avgVx*avgVx+avgVy*avgVy);
-  var minForce=1.5;
-
-  if(throwForce<minForce){
-    // 드래그가 느렸으면 그냥 툭 던지기
-    quickThrow();
-    return;
-  }
-
-  // 던지기!
+function throwDice(){
   isRolling=true;
+  if(shakeAnimId){cancelAnimationFrame(shakeAnimId);shakeAnimId=null}
   playRumble();
 
-  var worldVx=avgVx*2.5;
-  var worldVz=-avgVy*2.5;
-  // 최대 속도 제한 — 테이블 밖으로 나가지 않도록
-  var maxSpd=5;
-  var spd=Math.sqrt(worldVx*worldVx+worldVz*worldVz);
-  if(spd>maxSpd){worldVx=worldVx/spd*maxSpd;worldVz=worldVz/spd*maxSpd}
+  // 드래그 속도 평균 계산
+  var avgVx=0,avgVz=0,cnt=dragVelHistory.length;
+  if(cnt>0){
+    dragVelHistory.forEach(function(v){avgVx+=v.vx;avgVz+=v.vz});
+    avgVx/=cnt;avgVz/=cnt;
+  }
 
-  diceBodies.forEach(function(b,i){
+  // 속도 크기에 따라 던지기 세기 결정
+  var dragSpeed=Math.sqrt(avgVx*avgVx+avgVz*avgVz);
+  // 최소 세기 (그냥 놓기) ~ 최대 세기
+  var minPower=2,maxPower=7;
+  var power=Math.min(maxPower,Math.max(minPower,dragSpeed*0.5));
+  var throwVx=avgVx*0.4;
+  var throwVz=avgVz*0.4;
+  // 속도 제한
+  var throwSpd=Math.sqrt(throwVx*throwVx+throwVz*throwVz);
+  if(throwSpd>maxPower){throwVx=throwVx/throwSpd*maxPower;throwVz=throwVz/throwSpd*maxPower}
+
+  // 높이: 빠를수록 높이
+  var throwY=2+power*0.6;
+  var spinMul=8+power*2;
+
+  diceBodies.forEach(function(b){
     b.mass=1;b.updateMassProperties();
-    // 테이블 중앙 근처에서 시작하도록 위치 보정
-    var bx=b.position.x,bz=b.position.z;
-    var limX=TW/2-1,limZ=TH/2-1;
-    if(bx<-limX)b.position.x=-limX;if(bx>limX)b.position.x=limX;
-    if(bz<-limZ)b.position.z=-limZ;if(bz>limZ)b.position.z=limZ;
-    b.position.y=GRAB_HEIGHT+1;
+    b.position.x+=(Math.random()-0.5)*0.3;
+    b.position.y=GRAB_HEIGHT+0.5;
     b.velocity.set(
-      worldVx+(Math.random()-0.5)*1.5,
-      5+Math.random()*4,
-      worldVz+(Math.random()-0.5)*1.5
+      throwVx+(Math.random()-0.5)*1.5,
+      throwY+Math.random()*2,
+      throwVz+(Math.random()-0.5)*1.5
     );
     b.angularVelocity.set(
-      (Math.random()-0.5)*20,
-      (Math.random()-0.5)*20,
-      (Math.random()-0.5)*20
+      (Math.random()-0.5)*spinMul,
+      (Math.random()-0.5)*spinMul,
+      (Math.random()-0.5)*spinMul
     );
     b.linearDamping=0.35;
     b.angularDamping=0.4;
   });
+
+  dragVelHistory=[];
 
   waitForSettle();
 }
@@ -684,6 +662,12 @@ function waitForSettle(){
     requestAnimationFrame(check);
   }
   setTimeout(check,300);
+}
+
+function onPointerUp(e){
+  if(!isDragging)return;
+  isDragging=false;
+  throwDice();
 }
 
 // 이벤트 바인딩
