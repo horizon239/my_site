@@ -63,34 +63,6 @@ body::after{
 .header h1{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:0.1em;color:var(--text);line-height:1}
 .header-sub{font-size:12px;color:#555;margin-bottom:20px;letter-spacing:0.05em}
 
-/* 언어 피커 */
-.lang-picker{position:fixed;top:20px;right:20px;z-index:10}
-.lang-btn{
-  display:flex;align-items:center;gap:7px;padding:7px 13px;
-  background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);
-  border-radius:3px;cursor:pointer;color:#888;
-  font-family:'Noto Sans KR',sans-serif;font-size:12px;letter-spacing:0.05em;
-  transition:border-color 0.2s,color 0.2s
-}
-.lang-btn:hover{border-color:rgba(200,169,110,0.4);color:var(--text)}
-.lang-flag{font-size:16px}
-.lang-arrow{font-size:9px;opacity:0.5}
-.lang-dropdown{
-  display:none;position:absolute;top:calc(100% + 6px);right:0;
-  background:#111113;border:1px solid rgba(255,255,255,0.1);border-radius:3px;
-  min-width:160px;max-height:320px;overflow-y:auto;
-  box-shadow:0 12px 40px rgba(0,0,0,0.6)
-}
-.lang-dropdown.open{display:block}
-.lang-option{
-  display:flex;align-items:center;gap:10px;width:100%;padding:10px 14px;
-  border:none;background:transparent;cursor:pointer;color:#666;font-size:13px;
-  text-align:left;font-family:'Noto Sans KR',sans-serif;
-  transition:background 0.15s,color 0.15s
-}
-.lang-option:hover{background:rgba(255,255,255,0.04);color:var(--text)}
-.lang-option.active{color:var(--accent)}
-.lang-check{margin-left:auto;font-size:10px;color:var(--accent)}
 
 /* 월드 선택 */
 .world-section{
@@ -337,16 +309,6 @@ body::after{
 </style>
 </head>
 <body>
-
-<!-- 언어 피커 -->
-<div class="lang-picker" id="langPicker">
-  <button class="lang-btn" onclick="toggleLangDD()">
-    <span class="lang-flag" id="langFlag">🇰🇷</span>
-    <span id="langName">한국어</span>
-    <span class="lang-arrow" id="langArrow">▼</span>
-  </button>
-  <div class="lang-dropdown" id="langDropdown"></div>
-</div>
 
 <div class="app">
   <a class="home-btn" href="index.html">← <span id="txtHome">홈으로</span></a>
@@ -785,11 +747,6 @@ function deleteWorld(){
 /* ========== 언어 ========== */
 function applyLang(code){
   curLang=code;
-  var l=LANGS.find(function(x){return x.code===code});
-  if(!l)return;
-  document.getElementById('langFlag').textContent=l.flag;
-  document.getElementById('langName').textContent=l.name;
-
   document.getElementById('txtHome').textContent=tx('home');
   document.getElementById('txtTitle').textContent=tx('title');
   document.getElementById('txtSub').textContent=tx('sub');
@@ -810,40 +767,8 @@ function applyLang(code){
   document.querySelectorAll('.dim-label').forEach(function(el){el.textContent=tx(el.dataset.key)});
   document.querySelectorAll('.filter-label').forEach(function(el){el.textContent=tx(el.dataset.key)});
 
-  document.querySelectorAll('.lang-option').forEach(function(btn){
-    var isActive=btn.dataset.code===code;
-    btn.classList.toggle('active',isActive);
-    var chk=btn.querySelector('.lang-check');
-    if(chk)chk.style.display=isActive?'inline':'none';
-  });
-
-  saveLang(code);
   render();
 }
-
-function toggleLangDD(){
-  var dd=document.getElementById('langDropdown');
-  dd.classList.toggle('open');
-  document.getElementById('langArrow').textContent=dd.classList.contains('open')?'▲':'▼';
-}
-function closeLangDD(){
-  document.getElementById('langDropdown').classList.remove('open');
-  document.getElementById('langArrow').textContent='▼';
-}
-
-// 드롭다운 생성
-var dropdown=document.getElementById('langDropdown');
-LANGS.forEach(function(l){
-  var btn=document.createElement('button');
-  btn.className='lang-option';
-  btn.dataset.code=l.code;
-  btn.innerHTML='<span>'+l.flag+'</span><span>'+l.name+'</span><span class="lang-check">✓</span>';
-  btn.onclick=function(){applyLang(l.code);closeLangDD()};
-  dropdown.appendChild(btn);
-});
-document.addEventListener('click',function(e){
-  if(!document.getElementById('langPicker').contains(e.target))closeLangDD();
-});
 
 /* ========== 차원/필터 ========== */
 function setDim(btn){

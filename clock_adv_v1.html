@@ -195,19 +195,6 @@
       );
     }
 
-    function LangPicker(props) {
-      var lang = props.lang, setLang = props.setLang;
-      var _o = useState(false), open = _o[0], setOpen = _o[1];
-      var cur = LANGS.find(function (l) { return l.code === lang; });
-      return (<div style={{ position: "fixed", top: 10, right: 10, zIndex: 9999 }}>
-        <button onClick={function () { setOpen(!open); }} style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 12px", background: "rgba(255,255,255,0.95)", border: "2px solid #e0d6c8", borderRadius: 12, cursor: "pointer", fontSize: 14, boxShadow: "0 3px 12px rgba(0,0,0,0.1)" }}><span style={{ fontSize: 18 }}>{cur.flag}</span><span style={{ color: "#3d3027", fontWeight: 600 }}>{cur.name}</span><span style={{ fontSize: 10, color: "#aaa" }}>{open ? "▲" : "▼"}</span></button>
-        {open && <div><div onClick={function () { setOpen(false); }} style={{ position: "fixed", inset: 0, zIndex: -1 }} />
-          <div style={{ position: "absolute", top: "calc(100% + 4px)", right: 0, background: "#fff", borderRadius: 14, padding: 4, boxShadow: "0 8px 30px rgba(0,0,0,0.18)", border: "2px solid #f0ebe3", minWidth: 170, maxHeight: "55vh", overflowY: "auto" }}>
-            {LANGS.map(function (l) { return <button key={l.code} onClick={function () { setLang(l.code); setOpen(false); }} style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "9px 12px", border: "none", borderRadius: 10, background: lang === l.code ? AC + "20" : "transparent", cursor: "pointer", fontSize: 14, textAlign: "left" }}><span style={{ fontSize: 20 }}>{l.flag}</span><span style={{ color: "#3d3027", fontWeight: lang === l.code ? 700 : 400 }}>{l.name}</span>{lang === l.code && <span style={{ marginLeft: "auto", color: AC }}>✓</span>}</button>; })}
-          </div></div>}
-      </div>);
-    }
-
     function Badge(props) { return <div style={{ background: "#fff", borderRadius: 14, padding: "5px 16px", border: "2px solid " + props.c, boxShadow: "0 3px 12px " + props.c + "30" }}><div style={{ fontSize: 11, color: "#888" }}>{props.l}</div><div style={{ fontSize: 20, fontFamily: "'Gaegu',cursive", fontWeight: 700, color: "#3d3027" }}>{props.v}</div></div>; }
     function Btn(props) { return <button onClick={props.onClick} style={{ padding: "14px 32px", fontSize: 18, fontWeight: 700, background: props.bg, color: props.c, border: "none", borderRadius: 50, cursor: "pointer", boxShadow: "0 4px 15px rgba(0,0,0,0.1)", ...(props.style || {}) }}>{props.children}</button>; }
     function BigBtn(props) { return <button onClick={props.onClick} style={{ padding: "20px 28px", fontSize: 20, fontWeight: 700, background: props.bg, color: "#fff", border: "none", borderRadius: 20, cursor: "pointer", boxShadow: "0 6px 20px " + props.bg + "40", textAlign: "center" }}>{props.children}</button>; }
