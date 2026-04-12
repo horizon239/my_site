@@ -360,14 +360,14 @@
         <div class="card-arrow" id="clockEnter">Enter</div>
       </a>
 
-      <!-- 추후 추가 예시 (비활성) -->
-      <div class="card" style="opacity:0.3; cursor:default; pointer-events:none;">
-        <span class="card-tag" id="soonTag">Coming Soon</span>
-        <div class="card-icon">🎮</div>
-        <div class="card-title" id="soonTitle">Next Game</div>
-        <p class="card-desc" id="soonDesc">새로운 콘텐츠가 곧 추가될 예정입니다.</p>
-        <div class="card-arrow">—</div>
-      </div>
+      <!-- 마크 좌표 기록장 -->
+      <a class="card" href="mc_coords_v1.html">
+        <span class="card-tag" id="coordTag">Tool · Game</span>
+        <div class="card-icon">⛏️</div>
+        <div class="card-title">MC Coordinates</div>
+        <p class="card-desc" id="coordDesc">마인크래프트 좌표를 기록하고 관리하세요.<br>오버월드, 네더, 엔드 차원별 정리.</p>
+        <div class="card-arrow" id="coordEnter">Enter</div>
+      </a>
 
     </div>
   </div>
@@ -425,22 +425,28 @@
         es: "Entrar", fr: "Entrer", de: "Starten", pt: "Entrar",
         hi: "शुरू करें", ar: "ادخل",
       },
-      soonTag: {
-        ko: "Coming Soon", en: "Coming Soon", ja: "近日公開", zh: "即将推出",
-        es: "Próximamente", fr: "Bientôt", de: "Demnächst", pt: "Em breve",
-        hi: "जल्द आएगा", ar: "قريباً",
+      coordTag: {
+        ko: "Tool · Game", en: "Tool · Game", ja: "ツール · ゲーム",
+        zh: "工具 · 游戏", es: "Herramienta · Juego", fr: "Outil · Jeu",
+        de: "Werkzeug · Spiel", pt: "Ferramenta · Jogo",
+        hi: "उपकरण · खेल", ar: "أداة · لعبة",
       },
-      soonTitle: {
-        ko: "Next Game", en: "Next Game", ja: "次のゲーム", zh: "下一个游戏",
-        es: "Próximo Juego", fr: "Prochain Jeu", de: "Nächstes Spiel",
-        pt: "Próximo Jogo", hi: "अगला खेल", ar: "اللعبة القادمة",
+      coordDesc: {
+        ko: "마인크래프트 좌표를 기록하고 관리하세요.<br>오버월드, 네더, 엔드 차원별 정리.",
+        en: "Save and manage your Minecraft coordinates.<br>Organize by Overworld, Nether, and End.",
+        ja: "マインクラフトの座標を記録・管理。<br>オーバーワールド・ネザー・エンド別に整理。",
+        zh: "记录和管理Minecraft坐标。<br>按主世界、下界、末地分类。",
+        es: "Guarda tus coordenadas de Minecraft.<br>Organiza por Superficie, Nether y End.",
+        fr: "Enregistrez vos coordonnées Minecraft.<br>Classez par Surface, Nether et End.",
+        de: "Speichere deine Minecraft-Koordinaten.<br>Sortiert nach Oberwelt, Nether und Ende.",
+        pt: "Salve suas coordenadas do Minecraft.<br>Organize por Superfície, Nether e End.",
+        hi: "Minecraft निर्देशांक सहेजें और प्रबंधित करें।<br>ओवरवर्ल्ड, नेदर, एंड के अनुसार।",
+        ar: "احفظ إحداثيات Minecraft.<br>نظّمها حسب العالم العلوي والنيذر والنهاية.",
       },
-      soonDesc: {
-        ko: "새로운 콘텐츠가 곧 추가될 예정입니다.", en: "New content will be added soon.",
-        ja: "新しいコンテンツが近日公開されます。", zh: "新内容即将添加。",
-        es: "Nuevo contenido próximamente.", fr: "Nouveau contenu bientôt.",
-        de: "Neue Inhalte kommen bald.", pt: "Novo conteúdo em breve.",
-        hi: "नई सामग्री जल्द आएगी।", ar: "محتوى جديد قريباً.",
+      coordEnter: {
+        ko: "시작하기", en: "Enter", ja: "はじめる", zh: "进入",
+        es: "Entrar", fr: "Entrer", de: "Starten", pt: "Entrar",
+        hi: "शुरू करें", ar: "ادخل",
       },
     };
 
@@ -464,12 +470,13 @@
       document.getElementById('langName').textContent = l.name;
 
       // 텍스트 업데이트
-      ['subtitle','section','clockTag','clockEnter','soonTag','soonTitle','soonDesc'].forEach(function(key) {
+      ['subtitle','section','clockTag','clockEnter','coordTag','coordEnter'].forEach(function(key) {
         var el = document.getElementById('txt' + key.charAt(0).toUpperCase() + key.slice(1)) ||
                  document.getElementById(key);
         if (el) el.innerHTML = tx(key, code);
       });
       document.getElementById('clockDesc').innerHTML = tx('clockDesc', code);
+      document.getElementById('coordDesc').innerHTML = tx('coordDesc', code);
 
       // 활성 표시
       document.querySelectorAll('.lang-option').forEach(function(btn) {

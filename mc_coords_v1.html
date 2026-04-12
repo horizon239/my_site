@@ -1,0 +1,1025 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MC Coordinates</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&family=Bebas+Neue&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --bg:#0a0a0a;
+  --surface:#111113;
+  --border:rgba(255,255,255,0.07);
+  --text:#e8e4dc;
+  --muted:#555;
+  --accent:#c8a96e;
+  --accent-dim:rgba(200,169,110,0.15);
+  --coord-x:#e8785e;
+  --coord-y:#c8a96e;
+  --coord-z:#6eb5c8;
+  --danger:#c85e5e;
+}
+
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-serif;font-weight:300}
+
+body::before{
+  content:'';position:fixed;inset:0;
+  background-image:
+    radial-gradient(ellipse 80% 60% at 50% 0%,rgba(200,169,110,0.06) 0%,transparent 60%),
+    radial-gradient(ellipse 40% 40% at 80% 80%,rgba(200,169,110,0.03) 0%,transparent 50%);
+  pointer-events:none;z-index:0
+}
+
+body::after{
+  content:'';position:fixed;inset:0;
+  background-image:
+    linear-gradient(var(--border) 1px,transparent 1px),
+    linear-gradient(90deg,var(--border) 1px,transparent 1px);
+  background-size:80px 80px;pointer-events:none;z-index:0
+}
+
+.app{position:relative;z-index:1;max-width:480px;margin:0 auto;padding:24px 20px 24px;min-height:100vh;display:flex;flex-direction:column}
+
+/* 홈 버튼 */
+.home-btn{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:12px;letter-spacing:0.15em;color:#555;
+  text-decoration:none;margin-bottom:24px;
+  transition:color 0.2s
+}
+.home-btn:hover{color:var(--accent)}
+
+/* 헤더 */
+.header{display:flex;align-items:center;gap:12px;margin-bottom:8px}
+.logo{
+  width:40px;height:40px;
+  background:linear-gradient(135deg,var(--accent),#a08550);
+  border-radius:8px;display:flex;align-items:center;justify-content:center;
+  font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;color:var(--bg)
+}
+.header h1{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:0.1em;color:var(--text);line-height:1}
+.header-sub{font-size:12px;color:#555;margin-bottom:20px;letter-spacing:0.05em}
+
+/* 언어 피커 */
+.lang-picker{position:fixed;top:20px;right:20px;z-index:10}
+.lang-btn{
+  display:flex;align-items:center;gap:7px;padding:7px 13px;
+  background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);
+  border-radius:3px;cursor:pointer;color:#888;
+  font-family:'Noto Sans KR',sans-serif;font-size:12px;letter-spacing:0.05em;
+  transition:border-color 0.2s,color 0.2s
+}
+.lang-btn:hover{border-color:rgba(200,169,110,0.4);color:var(--text)}
+.lang-flag{font-size:16px}
+.lang-arrow{font-size:9px;opacity:0.5}
+.lang-dropdown{
+  display:none;position:absolute;top:calc(100% + 6px);right:0;
+  background:#111113;border:1px solid rgba(255,255,255,0.1);border-radius:3px;
+  min-width:160px;max-height:320px;overflow-y:auto;
+  box-shadow:0 12px 40px rgba(0,0,0,0.6)
+}
+.lang-dropdown.open{display:block}
+.lang-option{
+  display:flex;align-items:center;gap:10px;width:100%;padding:10px 14px;
+  border:none;background:transparent;cursor:pointer;color:#666;font-size:13px;
+  text-align:left;font-family:'Noto Sans KR',sans-serif;
+  transition:background 0.15s,color 0.15s
+}
+.lang-option:hover{background:rgba(255,255,255,0.04);color:var(--text)}
+.lang-option.active{color:var(--accent)}
+.lang-check{margin-left:auto;font-size:10px;color:var(--accent)}
+
+/* 월드 선택 */
+.world-section{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:6px;padding:14px 16px;margin-bottom:12px
+}
+.world-section-label{
+  font-size:10px;color:var(--muted);letter-spacing:0.2em;
+  text-transform:uppercase;margin-bottom:10px;font-weight:500
+}
+.world-selector{display:flex;align-items:center;gap:8px}
+.world-select{
+  flex:1;background:rgba(255,255,255,0.03);border:1px solid var(--border);
+  border-radius:4px;padding:9px 12px;color:var(--text);
+  font-family:'Noto Sans KR',sans-serif;font-size:14px;
+  outline:none;cursor:pointer;appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23555'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 12px center
+}
+.world-select:focus{border-color:var(--accent)}
+.world-select option{background:var(--surface);color:var(--text)}
+.world-btn{
+  width:32px;height:32px;border:1px solid var(--border);border-radius:4px;
+  background:transparent;color:#555;cursor:pointer;font-size:14px;
+  display:flex;align-items:center;justify-content:center;
+  transition:all 0.2s;flex-shrink:0
+}
+.world-btn:hover{border-color:rgba(255,255,255,0.15);color:var(--text)}
+.world-btn.danger:hover{border-color:var(--danger);color:var(--danger);background:rgba(200,80,80,0.1)}
+
+/* 입력 영역 */
+.input-section{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:6px;padding:18px;margin-bottom:16px
+}
+
+.dim-row{display:flex;gap:6px;margin-bottom:14px}
+.dim-btn{
+  flex:1;padding:8px 0;border:1px solid var(--border);border-radius:4px;
+  background:transparent;color:#555;font-size:12px;font-weight:400;
+  cursor:pointer;font-family:'Noto Sans KR',sans-serif;
+  transition:all 0.2s;text-align:center
+}
+.dim-btn.active{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+.dim-btn:hover:not(.active){border-color:rgba(255,255,255,0.15);color:#888}
+
+.coord-row{display:flex;gap:8px;margin-bottom:12px}
+.coord-group{flex:1}
+.coord-group label{
+  display:block;font-size:10px;color:var(--muted);margin-bottom:4px;
+  font-weight:500;text-transform:uppercase;letter-spacing:1.5px
+}
+.coord-group input{
+  width:100%;background:rgba(255,255,255,0.03);border:1px solid var(--border);
+  border-radius:4px;padding:10px 12px;font-family:'JetBrains Mono',monospace;
+  font-size:16px;outline:none;transition:border 0.2s;
+  -moz-appearance:textfield;color:var(--text)
+}
+.coord-group input::-webkit-outer-spin-button,
+.coord-group input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.coord-group.x input:focus{border-color:var(--coord-x)}
+.coord-group.y input:focus{border-color:var(--coord-y)}
+.coord-group.z input:focus{border-color:var(--coord-z)}
+.coord-group.x label{color:var(--coord-x)}
+.coord-group.y label{color:var(--coord-y)}
+.coord-group.z label{color:var(--coord-z)}
+
+.memo-group{margin-bottom:14px}
+.memo-group label{
+  display:block;font-size:10px;color:var(--muted);margin-bottom:4px;
+  font-weight:500;letter-spacing:0.5px
+}
+.memo-group input{
+  width:100%;background:rgba(255,255,255,0.03);border:1px solid var(--border);
+  border-radius:4px;padding:10px 12px;color:var(--text);
+  font-family:'Noto Sans KR',sans-serif;font-size:14px;outline:none;
+  transition:border 0.2s
+}
+.memo-group input:focus{border-color:var(--accent)}
+
+.btn-row{display:flex;gap:8px}
+.btn-save{
+  flex:1;background:var(--accent);color:var(--bg);border:none;padding:12px;
+  border-radius:4px;font-size:14px;font-weight:700;cursor:pointer;
+  font-family:'Noto Sans KR',sans-serif;transition:opacity 0.2s,transform 0.1s;
+  letter-spacing:0.05em
+}
+.btn-save:hover{opacity:0.85}
+.btn-save:active{transform:scale(0.97)}
+.btn-sub{
+  background:transparent;border:1px solid var(--border);color:#555;
+  padding:12px 14px;border-radius:4px;font-size:12px;cursor:pointer;
+  font-family:'Noto Sans KR',sans-serif;transition:all 0.2s;white-space:nowrap
+}
+.btn-sub:hover{border-color:rgba(255,255,255,0.15);color:var(--text)}
+
+.shortcut-hint{text-align:center;font-size:11px;color:#333;margin-top:10px}
+.shortcut-hint kbd{
+  background:rgba(255,255,255,0.05);padding:2px 6px;border-radius:3px;
+  font-family:'JetBrains Mono',monospace;font-size:10px;color:#555
+}
+
+/* 목록 */
+.list-header{display:flex;justify-content:space-between;align-items:center;margin:28px 0 12px}
+.list-header span{font-size:12px;color:#555;letter-spacing:0.15em;text-transform:uppercase}
+.badge{
+  background:rgba(200,169,110,0.15);padding:2px 10px;border-radius:20px;
+  font-size:12px;color:var(--accent);font-family:'JetBrains Mono',monospace
+}
+
+.filter-row{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
+.filter-btn{
+  padding:5px 12px;border:1px solid var(--border);border-radius:3px;
+  background:transparent;color:#555;font-size:11px;cursor:pointer;
+  font-family:'Noto Sans KR',sans-serif;transition:all 0.2s
+}
+.filter-btn.active{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+.filter-btn:hover:not(.active){border-color:rgba(255,255,255,0.15);color:#888}
+
+#list{flex:1;overflow-y:auto;min-height:0;max-height:calc(100vh - 520px);padding-right:4px}
+#list::-webkit-scrollbar{width:4px}
+#list::-webkit-scrollbar-track{background:transparent}
+#list::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:2px}
+#list::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,0.2)}
+
+.empty{text-align:center;padding:40px 0;color:#333;font-size:13px}
+
+.entry{
+  background:var(--surface);border:1px solid var(--border);border-radius:6px;
+  padding:14px 16px;margin-bottom:8px;position:relative;transition:border 0.2s
+}
+.entry:hover{border-color:rgba(255,255,255,0.12)}
+.entry-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.entry-memo{font-size:14px;font-weight:400;color:var(--text);max-width:250px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.entry-meta{display:flex;align-items:center;gap:8px;margin-right:32px}
+.entry-dim{
+  font-size:10px;padding:2px 7px;border-radius:3px;
+  background:rgba(255,255,255,0.04);color:#666;letter-spacing:0.05em
+}
+.entry-time{font-size:11px;color:#333;font-family:'JetBrains Mono',monospace}
+.entry-coords{display:flex;gap:16px}
+.ctag{font-size:14px;font-family:'JetBrains Mono',monospace}
+.cx{color:var(--coord-x)}
+.cy{color:var(--coord-y)}
+.cz{color:var(--coord-z)}
+.clbl{opacity:0.4;margin-right:3px;font-size:12px}
+.btn-del{
+  position:absolute;top:12px;right:12px;background:none;border:none;
+  color:#333;cursor:pointer;font-size:14px;padding:4px 8px;border-radius:3px;
+  transition:all 0.2s;display:none;z-index:1
+}
+.entry:hover .btn-del{display:block}
+.btn-del:hover{background:rgba(200,80,80,0.15);color:var(--danger)}
+
+/* 체크박스 */
+.entry-check{
+  position:absolute;top:14px;left:-28px;width:18px;height:18px;
+  appearance:none;-webkit-appearance:none;border:1px solid var(--border);
+  border-radius:3px;background:transparent;cursor:pointer;
+  transition:all 0.15s;flex-shrink:0
+}
+.entry-check:checked{background:var(--accent);border-color:var(--accent)}
+.entry-check:checked::after{
+  content:'✓';display:block;text-align:center;
+  font-size:12px;line-height:16px;color:var(--bg);font-weight:700
+}
+.entry-check:hover{border-color:rgba(255,255,255,0.25)}
+.entry.checked{border-color:rgba(200,169,110,0.25);background:rgba(200,169,110,0.04)}
+
+/* 선택 모드 시 목록 들여쓰기 */
+#list.select-mode .entry{margin-left:28px}
+
+/* 선택 액션 바 */
+.select-bar{
+  position:fixed;bottom:0;left:0;right:0;
+  background:var(--surface);border-top:1px solid var(--border);
+  padding:12px 20px;display:flex;align-items:center;justify-content:center;gap:12px;
+  z-index:8;transform:translateY(100%);transition:transform 0.25s;
+  box-shadow:0 -8px 30px rgba(0,0,0,0.4)
+}
+.select-bar.show{transform:translateY(0)}
+.select-bar-info{font-size:12px;color:#888;margin-right:auto;white-space:nowrap}
+.select-bar-info strong{color:var(--accent)}
+.select-bar-btn{
+  padding:8px 16px;border-radius:4px;border:1px solid var(--border);
+  background:transparent;color:var(--text);font-size:12px;cursor:pointer;
+  font-family:'Noto Sans KR',sans-serif;transition:all 0.2s;white-space:nowrap
+}
+.select-bar-btn:hover{border-color:rgba(255,255,255,0.2)}
+.select-bar-btn.copy{border-color:var(--accent);color:var(--accent)}
+.select-bar-btn.copy:hover{background:var(--accent-dim)}
+.select-bar-btn.del{border-color:var(--danger);color:var(--danger)}
+.select-bar-btn.del:hover{background:rgba(200,80,80,0.1)}
+
+/* 전체 선택 */
+.select-all-row{display:none;align-items:center;gap:8px;margin-bottom:10px}
+.select-all-row.show{display:flex}
+.select-all-check{
+  width:16px;height:16px;appearance:none;-webkit-appearance:none;
+  border:1px solid var(--border);border-radius:3px;background:transparent;
+  cursor:pointer;transition:all 0.15s;flex-shrink:0
+}
+.select-all-check:checked{background:var(--accent);border-color:var(--accent)}
+.select-all-check:checked::after{
+  content:'✓';display:block;text-align:center;
+  font-size:11px;line-height:14px;color:var(--bg);font-weight:700
+}
+.select-all-label{font-size:11px;color:#555;cursor:pointer}
+
+.btn-clear-all{
+  font-size:11px;color:var(--danger);background:none;border:none;
+  cursor:pointer;padding:2px 8px;border-radius:3px;
+  font-family:'Noto Sans KR',sans-serif;opacity:0.6;transition:opacity 0.2s
+}
+.btn-clear-all:hover{opacity:1}
+
+/* 토스트 */
+.toast{
+  position:fixed;bottom:24px;left:50%;
+  transform:translateX(-50%) translateY(80px);
+  background:var(--accent);color:var(--bg);
+  padding:10px 24px;border-radius:4px;font-size:13px;font-weight:500;
+  opacity:0;transition:all 0.3s;pointer-events:none;z-index:10
+}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+
+/* 모바일 */
+@media(max-width:500px){
+  .app{padding:16px 14px 24px}
+  .header h1{font-size:24px}
+  .coord-group input{font-size:14px;padding:9px 10px}
+  .btn-sub{padding:10px 10px;font-size:11px}
+  .entry-memo{max-width:180px}
+  #list{max-height:calc(100vh - 560px)}
+}
+</style>
+</head>
+<body>
+
+<!-- 언어 피커 -->
+<div class="lang-picker" id="langPicker">
+  <button class="lang-btn" onclick="toggleLangDD()">
+    <span class="lang-flag" id="langFlag">🇰🇷</span>
+    <span id="langName">한국어</span>
+    <span class="lang-arrow" id="langArrow">▼</span>
+  </button>
+  <div class="lang-dropdown" id="langDropdown"></div>
+</div>
+
+<div class="app">
+  <a class="home-btn" href="index.html">← <span id="txtHome">홈으로</span></a>
+
+  <div class="header">
+    <div class="logo">XYZ</div>
+    <h1 id="txtTitle">MC Coordinates</h1>
+  </div>
+  <p class="header-sub" id="txtSub">마인크래프트 좌표를 기록하고 관리하세요</p>
+
+  <!-- 월드 선택 -->
+  <div class="world-section">
+    <div class="world-section-label" id="lblWorld">World</div>
+    <div class="world-selector">
+      <select class="world-select" id="worldSelect" onchange="switchWorld()"></select>
+      <button class="world-btn" onclick="addWorld()" title="추가" id="btnWorldAdd">+</button>
+      <button class="world-btn" onclick="renameWorld()" title="이름 변경" id="btnWorldRename">✎</button>
+      <button class="world-btn danger" onclick="deleteWorld()" title="삭제" id="btnWorldDel">✕</button>
+    </div>
+  </div>
+
+  <div class="input-section">
+    <!-- 차원 선택 -->
+    <div class="dim-row">
+      <button class="dim-btn active" data-dim="overworld" onclick="setDim(this)">🌍 <span class="dim-label" data-key="overworld">오버월드</span></button>
+      <button class="dim-btn" data-dim="nether" onclick="setDim(this)">🔥 <span class="dim-label" data-key="nether">네더</span></button>
+      <button class="dim-btn" data-dim="end" onclick="setDim(this)">🌌 <span class="dim-label" data-key="end">엔드</span></button>
+    </div>
+
+    <div class="coord-row">
+      <div class="coord-group x"><label>X</label><input type="number" id="ix" tabindex="1"></div>
+      <div class="coord-group y"><label>Y</label><input type="number" id="iy" tabindex="2"></div>
+      <div class="coord-group z"><label>Z</label><input type="number" id="iz" tabindex="3"></div>
+    </div>
+    <div class="memo-group"><label id="lblMemo">메모</label><input type="text" id="imemo" tabindex="4"></div>
+    <div class="btn-row">
+      <button class="btn-save" onclick="saveEntry()" tabindex="5" id="btnSave">저장</button>
+      <button class="btn-sub" onclick="exportJSON()" tabindex="6" id="btnExport">내보내기</button>
+      <button class="btn-sub" onclick="document.getElementById('importFile').click()" tabindex="7" id="btnImport">불러오기</button>
+      <input type="file" id="importFile" accept=".json" style="display:none" onchange="importJSON(event)">
+    </div>
+  </div>
+
+  <div class="shortcut-hint"><kbd>Enter</kbd> <span id="txtShortcut">키로 빠르게 저장</span></div>
+
+  <div class="list-header">
+    <span id="txtListLabel">기록 목록</span>
+    <div style="display:flex;align-items:center;gap:10px">
+      <button class="btn-clear-all" onclick="clearAll()" id="btnClearAll">전체 삭제</button>
+      <span class="badge" id="count">0</span>
+    </div>
+  </div>
+
+  <!-- 차원 필터 -->
+  <div class="filter-row">
+    <button class="filter-btn active" data-filter="all" onclick="setFilter(this)"><span class="filter-label" data-key="all">전체</span></button>
+    <button class="filter-btn" data-filter="overworld" onclick="setFilter(this)">🌍 <span class="filter-label" data-key="overworld">오버월드</span></button>
+    <button class="filter-btn" data-filter="nether" onclick="setFilter(this)">🔥 <span class="filter-label" data-key="nether">네더</span></button>
+    <button class="filter-btn" data-filter="end" onclick="setFilter(this)">🌌 <span class="filter-label" data-key="end">엔드</span></button>
+  </div>
+
+  <div class="select-all-row" id="selectAllRow">
+    <input type="checkbox" class="select-all-check" id="selectAllCheck" onchange="toggleSelectAll()">
+    <label class="select-all-label" for="selectAllCheck" id="lblSelectAll">전체 선택</label>
+  </div>
+
+  <div id="list"><div class="empty">아직 기록이 없습니다</div></div>
+</div>
+
+<!-- 선택 액션 바 -->
+<div class="select-bar" id="selectBar">
+  <span class="select-bar-info"><strong id="selCount">0</strong> <span id="lblSelected">개 선택</span></span>
+  <button class="select-bar-btn copy" onclick="copySelected()" id="btnSelCopy">복사</button>
+  <button class="select-bar-btn del" onclick="deleteSelected()" id="btnSelDel">삭제</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+var LANGS=[
+  {code:"ko",name:"한국어",flag:"🇰🇷"},
+  {code:"en",name:"English",flag:"🇺🇸"},
+  {code:"ja",name:"日本語",flag:"🇯🇵"},
+  {code:"zh",name:"中文",flag:"🇨🇳"},
+  {code:"es",name:"Español",flag:"🇪🇸"},
+  {code:"fr",name:"Français",flag:"🇫🇷"},
+  {code:"de",name:"Deutsch",flag:"🇩🇪"},
+  {code:"pt",name:"Português",flag:"🇧🇷"},
+  {code:"hi",name:"हिन्दी",flag:"🇮🇳"},
+  {code:"ar",name:"العربية",flag:"🇸🇦"}
+];
+
+var I18N={
+  title:{
+    ko:"MC Coordinates",en:"MC Coordinates",ja:"MC Coordinates",zh:"MC Coordinates",
+    es:"MC Coordinates",fr:"MC Coordinates",de:"MC Coordinates",pt:"MC Coordinates",
+    hi:"MC Coordinates",ar:"MC Coordinates"
+  },
+  sub:{
+    ko:"마인크래프트 좌표를 기록하고 관리하세요",
+    en:"Save and manage your Minecraft coordinates",
+    ja:"マインクラフトの座標を記録・管理しよう",
+    zh:"记录和管理你的Minecraft坐标",
+    es:"Guarda y gestiona tus coordenadas de Minecraft",
+    fr:"Enregistrez et gérez vos coordonnées Minecraft",
+    de:"Speichere und verwalte deine Minecraft-Koordinaten",
+    pt:"Salve e gerencie suas coordenadas do Minecraft",
+    hi:"अपने Minecraft निर्देशांक सहेजें और प्रबंधित करें",
+    ar:"احفظ وأدر إحداثيات Minecraft الخاصة بك"
+  },
+  home:{
+    ko:"홈으로",en:"Home",ja:"ホームへ",zh:"返回首页",
+    es:"Inicio",fr:"Accueil",de:"Startseite",pt:"Início",
+    hi:"होम",ar:"الرئيسية"
+  },
+  world:{
+    ko:"월드",en:"World",ja:"ワールド",zh:"世界",
+    es:"Mundo",fr:"Monde",de:"Welt",pt:"Mundo",
+    hi:"वर्ल्ड",ar:"العالم"
+  },
+  newWorld:{
+    ko:"새 월드",en:"New World",ja:"新しいワールド",zh:"新世界",
+    es:"Nuevo Mundo",fr:"Nouveau Monde",de:"Neue Welt",pt:"Novo Mundo",
+    hi:"नया वर्ल्ड",ar:"عالم جديد"
+  },
+  worldNamePrompt:{
+    ko:"월드 이름을 입력하세요",en:"Enter world name",ja:"ワールド名を入力",zh:"输入世界名称",
+    es:"Nombre del mundo",fr:"Nom du monde",de:"Weltname eingeben",pt:"Nome do mundo",
+    hi:"वर्ल्ड का नाम दर्ज करें",ar:"أدخل اسم العالم"
+  },
+  worldRenamed:{
+    ko:"이름 변경 완료",en:"Renamed",ja:"名前変更完了",zh:"已重命名",
+    es:"Renombrado",fr:"Renommé",de:"Umbenannt",pt:"Renomeado",
+    hi:"नाम बदला गया",ar:"تمت إعادة التسمية"
+  },
+  worldDelConfirm:{
+    ko:"이 월드의 모든 좌표가 삭제됩니다. 계속할까요?",
+    en:"All coordinates in this world will be deleted. Continue?",
+    ja:"このワールドの全座標が削除されます。続けますか？",
+    zh:"此世界的所有坐标将被删除。继续？",
+    es:"Se borrarán todas las coordenadas. ¿Continuar?",
+    fr:"Toutes les coordonnées seront supprimées. Continuer ?",
+    de:"Alle Koordinaten werden gelöscht. Fortfahren?",
+    pt:"Todas as coordenadas serão apagadas. Continuar?",
+    hi:"इस वर्ल्ड के सभी निर्देशांक हटा दिए जाएंगे। जारी रखें?",
+    ar:"سيتم حذف جميع الإحداثيات. متابعة؟"
+  },
+  worldDelLast:{
+    ko:"마지막 월드는 삭제할 수 없습니다",en:"Cannot delete the last world",
+    ja:"最後のワールドは削除できません",zh:"无法删除最后一个世界",
+    es:"No se puede borrar el último mundo",fr:"Impossible de supprimer le dernier monde",
+    de:"Letzte Welt kann nicht gelöscht werden",pt:"Não é possível apagar o último mundo",
+    hi:"अंतिम वर्ल्ड हटाया नहीं जा सकता",ar:"لا يمكن حذف العالم الأخير"
+  },
+  overworld:{
+    ko:"오버월드",en:"Overworld",ja:"オーバーワールド",zh:"主世界",
+    es:"Superficie",fr:"Surface",de:"Oberwelt",pt:"Superfície",
+    hi:"ओवरवर्ल्ड",ar:"العالم العلوي"
+  },
+  nether:{
+    ko:"네더",en:"Nether",ja:"ネザー",zh:"下界",
+    es:"Nether",fr:"Nether",de:"Nether",pt:"Nether",
+    hi:"नेदर",ar:"نيذر"
+  },
+  end:{
+    ko:"엔드",en:"The End",ja:"エンド",zh:"末地",
+    es:"End",fr:"End",de:"Ende",pt:"End",
+    hi:"एंड",ar:"النهاية"
+  },
+  memo:{
+    ko:"메모",en:"Memo",ja:"メモ",zh:"备注",
+    es:"Nota",fr:"Mémo",de:"Notiz",pt:"Nota",
+    hi:"मेमो",ar:"ملاحظة"
+  },
+  save:{
+    ko:"저장",en:"Save",ja:"保存",zh:"保存",
+    es:"Guardar",fr:"Sauver",de:"Speichern",pt:"Salvar",
+    hi:"सहेजें",ar:"حفظ"
+  },
+  copy:{
+    ko:"복사",en:"Copy",ja:"コピー",zh:"复制",
+    es:"Copiar",fr:"Copier",de:"Kopieren",pt:"Copiar",
+    hi:"कॉपी",ar:"نسخ"
+  },
+  exportBtn:{
+    ko:"내보내기",en:"Export",ja:"エクスポート",zh:"导出",
+    es:"Exportar",fr:"Exporter",de:"Exportieren",pt:"Exportar",
+    hi:"निर्यात",ar:"تصدير"
+  },
+  importBtn:{
+    ko:"불러오기",en:"Import",ja:"インポート",zh:"导入",
+    es:"Importar",fr:"Importer",de:"Importieren",pt:"Importar",
+    hi:"आयात",ar:"استيراد"
+  },
+  shortcut:{
+    ko:"키로 빠르게 저장",en:"to save quickly",ja:"で素早く保存",zh:"快速保存",
+    es:"para guardar rápido",fr:"pour sauvegarder",de:"zum schnellen Speichern",
+    pt:"para salvar rápido",hi:"से तेज़ी से सहेजें",ar:"للحفظ السريع"
+  },
+  listLabel:{
+    ko:"기록 목록",en:"Records",ja:"記録リスト",zh:"记录列表",
+    es:"Registros",fr:"Enregistrements",de:"Einträge",pt:"Registros",
+    hi:"रिकॉर्ड",ar:"السجلات"
+  },
+  clearAll:{
+    ko:"전체 삭제",en:"Clear All",ja:"全削除",zh:"全部删除",
+    es:"Borrar todo",fr:"Tout effacer",de:"Alle löschen",pt:"Limpar tudo",
+    hi:"सब हटाएं",ar:"مسح الكل"
+  },
+  all:{
+    ko:"전체",en:"All",ja:"すべて",zh:"全部",
+    es:"Todo",fr:"Tout",de:"Alle",pt:"Todos",
+    hi:"सभी",ar:"الكل"
+  },
+  empty:{
+    ko:"아직 기록이 없습니다",en:"No records yet",ja:"まだ記録がありません",zh:"暂无记录",
+    es:"Sin registros",fr:"Aucun enregistrement",de:"Noch keine Einträge",
+    pt:"Nenhum registro",hi:"अभी कोई रिकॉर्ड नहीं",ar:"لا توجد سجلات بعد"
+  },
+  noMemo:{
+    ko:"(메모 없음)",en:"(no memo)",ja:"(メモなし)",zh:"(无备注)",
+    es:"(sin nota)",fr:"(sans mémo)",de:"(keine Notiz)",pt:"(sem nota)",
+    hi:"(कोई मेमो नहीं)",ar:"(بدون ملاحظة)"
+  },
+  toastSaved:{
+    ko:"저장 완료!",en:"Saved!",ja:"保存しました！",zh:"已保存！",
+    es:"¡Guardado!",fr:"Sauvegardé !",de:"Gespeichert!",pt:"Salvo!",
+    hi:"सहेजा गया!",ar:"!تم الحفظ"
+  },
+  toastCopied:{
+    ko:"클립보드에 복사됨!",en:"Copied to clipboard!",ja:"クリップボードにコピー！",zh:"已复制到剪贴板！",
+    es:"¡Copiado!",fr:"Copié !",de:"Kopiert!",pt:"Copiado!",
+    hi:"कॉपी हो गया!",ar:"!تم النسخ"
+  },
+  toastExported:{
+    ko:"JSON 저장 완료!",en:"JSON exported!",ja:"JSONエクスポート完了！",zh:"JSON已导出！",
+    es:"¡JSON exportado!",fr:"JSON exporté !",de:"JSON exportiert!",pt:"JSON exportado!",
+    hi:"JSON निर्यात हुआ!",ar:"!تم تصدير JSON"
+  },
+  toastImported:{
+    ko:"불러오기 완료!",en:"Imported!",ja:"インポート完了！",zh:"导入完成！",
+    es:"¡Importado!",fr:"Importé !",de:"Importiert!",pt:"Importado!",
+    hi:"आयात हुआ!",ar:"!تم الاستيراد"
+  },
+  toastEmpty:{
+    ko:"좌표를 입력하세요",en:"Enter coordinates",ja:"座標を入力してください",zh:"请输入坐标",
+    es:"Ingresa coordenadas",fr:"Entrez les coordonnées",de:"Koordinaten eingeben",
+    pt:"Insira coordenadas",hi:"निर्देशांक दर्ज करें",ar:"أدخل الإحداثيات"
+  },
+  toastNoData:{
+    ko:"데이터가 없습니다",en:"No data",ja:"データがありません",zh:"没有数据",
+    es:"Sin datos",fr:"Pas de données",de:"Keine Daten",pt:"Sem dados",
+    hi:"कोई डेटा नहीं",ar:"لا توجد بيانات"
+  },
+  toastClearConfirm:{
+    ko:"정말 전체 삭제할까요?",en:"Delete all records?",ja:"全て削除しますか？",zh:"确定全部删除？",
+    es:"¿Borrar todo?",fr:"Tout supprimer ?",de:"Alles löschen?",pt:"Apagar tudo?",
+    hi:"सब हटाएं?",ar:"حذف الكل؟"
+  },
+  toastCleared:{
+    ko:"전체 삭제 완료",en:"All cleared",ja:"全削除しました",zh:"已全部删除",
+    es:"Todo borrado",fr:"Tout effacé",de:"Alles gelöscht",pt:"Tudo apagado",
+    hi:"सब हटा दिया",ar:"تم مسح الكل"
+  },
+  toastCopyFail:{
+    ko:"복사 실패",en:"Copy failed",ja:"コピー失敗",zh:"复制失败",
+    es:"Error al copiar",fr:"Échec de la copie",de:"Kopieren fehlgeschlagen",pt:"Falha ao copiar",
+    hi:"कॉपी विफल",ar:"فشل النسخ"
+  },
+  toastImportFail:{
+    ko:"올바른 JSON 파일이 아닙니다",en:"Invalid JSON file",ja:"無効なJSONファイルです",zh:"无效的JSON文件",
+    es:"Archivo JSON inválido",fr:"Fichier JSON invalide",de:"Ungültige JSON-Datei",pt:"Arquivo JSON inválido",
+    hi:"अमान्य JSON फ़ाइल",ar:"ملف JSON غير صالح"
+  },
+  del:{ko:"삭제",en:"Delete",ja:"削除",zh:"删除",es:"Borrar",fr:"Supprimer",de:"Löschen",pt:"Apagar",hi:"हटाएं",ar:"حذف"},
+  selectAll:{
+    ko:"전체 선택",en:"Select all",ja:"すべて選択",zh:"全选",
+    es:"Seleccionar todo",fr:"Tout sélectionner",de:"Alle auswählen",pt:"Selecionar tudo",
+    hi:"सभी चुनें",ar:"تحديد الكل"
+  },
+  selected:{
+    ko:"개 선택",en:"selected",ja:"件選択",zh:"已选",
+    es:"seleccionados",fr:"sélectionnés",de:"ausgewählt",pt:"selecionados",
+    hi:"चयनित",ar:"محدد"
+  },
+  copySelected:{
+    ko:"복사",en:"Copy",ja:"コピー",zh:"复制",
+    es:"Copiar",fr:"Copier",de:"Kopieren",pt:"Copiar",
+    hi:"कॉपी",ar:"نسخ"
+  },
+  deleteSelected:{
+    ko:"삭제",en:"Delete",ja:"削除",zh:"删除",
+    es:"Borrar",fr:"Supprimer",de:"Löschen",pt:"Apagar",
+    hi:"हटाएं",ar:"حذف"
+  },
+  delSelConfirm:{
+    ko:"선택한 기록을 삭제할까요?",en:"Delete selected records?",ja:"選択した記録を削除しますか？",zh:"删除所选记录？",
+    es:"¿Borrar registros seleccionados?",fr:"Supprimer les enregistrements sélectionnés ?",
+    de:"Ausgewählte Einträge löschen?",pt:"Apagar registros selecionados?",
+    hi:"चयनित रिकॉर्ड हटाएं?",ar:"حذف السجلات المحددة؟"
+  }
+};
+
+/* ========== 데이터 레이어 ========== */
+// 데이터 구조: { worlds: [{id,name,coords:[...]}], activeWorldId: "..." }
+function genId(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
+
+function loadData(){
+  try{
+    var raw=localStorage.getItem('mc-data');
+    if(raw){
+      var d=JSON.parse(raw);
+      if(d.worlds&&d.worlds.length)return d;
+    }
+    // 기존 mc-coords 데이터 마이그레이션
+    var old=localStorage.getItem('mc-coords');
+    if(old){
+      var coords=JSON.parse(old);
+      if(Array.isArray(coords)&&coords.length){
+        var w={id:genId(),name:'World 1',coords:coords};
+        return {worlds:[w],activeWorldId:w.id};
+      }
+    }
+  }catch(e){}
+  // 기본: 빈 월드 1개
+  var w={id:genId(),name:'World 1',coords:[]};
+  return {worlds:[w],activeWorldId:w.id};
+}
+
+var data=loadData();
+
+function saveData(){localStorage.setItem('mc-data',JSON.stringify(data))}
+function activeWorld(){return data.worlds.find(function(w){return w.id===data.activeWorldId})||data.worlds[0]}
+function getCoords(){return activeWorld().coords}
+
+/* ========== 상태 ========== */
+var curLang='ko';
+var curDim='overworld';
+var curFilter='all';
+var selectedSet=new Set(); // 선택된 좌표의 원본 인덱스 저장
+
+/* ========== 유틸 ========== */
+function tx(k){var m=I18N[k];if(!m)return k;return m[curLang]||m.en||k}
+function getSavedLang(){try{return localStorage.getItem('lang')||'ko'}catch(e){return'ko'}}
+function saveLang(c){try{localStorage.setItem('lang',c)}catch(e){}}
+function showToast(m){var t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(function(){t.classList.remove('show')},1500)}
+function pad(n){return String(n).padStart(2,'0')}
+function fmt(iso){var d=new Date(iso);return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())+' '+pad(d.getHours())+':'+pad(d.getMinutes())}
+function esc(s){var d=document.createElement('div');d.textContent=s;return d.innerHTML}
+
+/* ========== 월드 관리 ========== */
+function renderWorldSelect(){
+  var sel=document.getElementById('worldSelect');
+  sel.innerHTML='';
+  data.worlds.forEach(function(w){
+    var opt=document.createElement('option');
+    opt.value=w.id;
+    opt.textContent=w.name;
+    if(w.id===data.activeWorldId)opt.selected=true;
+    sel.appendChild(opt);
+  });
+}
+
+function switchWorld(){
+  data.activeWorldId=document.getElementById('worldSelect').value;
+  saveData();
+  curFilter='all';
+  document.querySelectorAll('.filter-btn').forEach(function(b){b.classList.toggle('active',b.dataset.filter==='all')});
+  render();
+}
+
+function addWorld(){
+  var name=prompt(tx('worldNamePrompt'),tx('newWorld'));
+  if(!name||!name.trim())return;
+  var w={id:genId(),name:name.trim(),coords:[]};
+  data.worlds.push(w);
+  data.activeWorldId=w.id;
+  saveData();
+  renderWorldSelect();
+  render();
+}
+
+function renameWorld(){
+  var w=activeWorld();
+  var name=prompt(tx('worldNamePrompt'),w.name);
+  if(!name||!name.trim())return;
+  w.name=name.trim();
+  saveData();
+  renderWorldSelect();
+  showToast(tx('worldRenamed'));
+}
+
+function deleteWorld(){
+  if(data.worlds.length<=1){showToast(tx('worldDelLast'));return}
+  if(!confirm(tx('worldDelConfirm')))return;
+  var idx=data.worlds.findIndex(function(w){return w.id===data.activeWorldId});
+  data.worlds.splice(idx,1);
+  data.activeWorldId=data.worlds[0].id;
+  saveData();
+  renderWorldSelect();
+  render();
+}
+
+/* ========== 언어 ========== */
+function applyLang(code){
+  curLang=code;
+  var l=LANGS.find(function(x){return x.code===code});
+  if(!l)return;
+  document.getElementById('langFlag').textContent=l.flag;
+  document.getElementById('langName').textContent=l.name;
+
+  document.getElementById('txtHome').textContent=tx('home');
+  document.getElementById('txtTitle').textContent=tx('title');
+  document.getElementById('txtSub').textContent=tx('sub');
+  document.getElementById('lblWorld').textContent=tx('world');
+  document.getElementById('lblMemo').textContent=tx('memo');
+  document.getElementById('btnSave').textContent=tx('save');
+  document.getElementById('btnExport').textContent=tx('exportBtn');
+  document.getElementById('btnImport').textContent=tx('importBtn');
+  document.getElementById('txtShortcut').textContent=tx('shortcut');
+  document.getElementById('txtListLabel').textContent=tx('listLabel');
+  document.getElementById('btnClearAll').textContent=tx('clearAll');
+  document.getElementById('lblSelectAll').textContent=tx('selectAll');
+  document.getElementById('lblSelected').textContent=tx('selected');
+  document.getElementById('btnSelCopy').textContent=tx('copySelected');
+  document.getElementById('btnSelDel').textContent=tx('deleteSelected');
+
+  document.querySelectorAll('.dim-label').forEach(function(el){el.textContent=tx(el.dataset.key)});
+  document.querySelectorAll('.filter-label').forEach(function(el){el.textContent=tx(el.dataset.key)});
+
+  document.querySelectorAll('.lang-option').forEach(function(btn){
+    var isActive=btn.dataset.code===code;
+    btn.classList.toggle('active',isActive);
+    var chk=btn.querySelector('.lang-check');
+    if(chk)chk.style.display=isActive?'inline':'none';
+  });
+
+  saveLang(code);
+  render();
+}
+
+function toggleLangDD(){
+  var dd=document.getElementById('langDropdown');
+  dd.classList.toggle('open');
+  document.getElementById('langArrow').textContent=dd.classList.contains('open')?'▲':'▼';
+}
+function closeLangDD(){
+  document.getElementById('langDropdown').classList.remove('open');
+  document.getElementById('langArrow').textContent='▼';
+}
+
+// 드롭다운 생성
+var dropdown=document.getElementById('langDropdown');
+LANGS.forEach(function(l){
+  var btn=document.createElement('button');
+  btn.className='lang-option';
+  btn.dataset.code=l.code;
+  btn.innerHTML='<span>'+l.flag+'</span><span>'+l.name+'</span><span class="lang-check">✓</span>';
+  btn.onclick=function(){applyLang(l.code);closeLangDD()};
+  dropdown.appendChild(btn);
+});
+document.addEventListener('click',function(e){
+  if(!document.getElementById('langPicker').contains(e.target))closeLangDD();
+});
+
+/* ========== 차원/필터 ========== */
+function setDim(btn){
+  curDim=btn.dataset.dim;
+  document.querySelectorAll('.dim-btn').forEach(function(b){b.classList.remove('active')});
+  btn.classList.add('active');
+}
+
+function setFilter(btn){
+  curFilter=btn.dataset.filter;
+  document.querySelectorAll('.filter-btn').forEach(function(b){b.classList.remove('active')});
+  btn.classList.add('active');
+  render();
+}
+
+function getFiltered(){
+  var coords=getCoords();
+  if(curFilter==='all')return coords;
+  return coords.filter(function(e){return e.dim===curFilter});
+}
+
+/* ========== 선택 관리 ========== */
+function updateSelectBar(){
+  var count=selectedSet.size;
+  document.getElementById('selCount').textContent=count;
+  document.getElementById('selectBar').classList.toggle('show',count>0);
+  // 전체선택 체크 상태
+  var filtered=getFiltered();
+  var coords=getCoords();
+  var allChecked=filtered.length>0&&filtered.every(function(e){return selectedSet.has(coords.indexOf(e))});
+  document.getElementById('selectAllCheck').checked=allChecked;
+  // 전체선택 행 표시 (목록이 있을때만)
+  document.getElementById('selectAllRow').classList.toggle('show',filtered.length>0);
+  // select-mode 클래스
+  document.getElementById('list').classList.toggle('select-mode',filtered.length>0);
+}
+
+function toggleCheck(origIdx){
+  if(selectedSet.has(origIdx))selectedSet.delete(origIdx);
+  else selectedSet.add(origIdx);
+  var cb=document.querySelector('.entry-check[data-idx="'+origIdx+'"]');
+  if(cb)cb.checked=selectedSet.has(origIdx);
+  var entry=cb&&cb.closest('.entry');
+  if(entry)entry.classList.toggle('checked',selectedSet.has(origIdx));
+  updateSelectBar();
+}
+
+function toggleSelectAll(){
+  var filtered=getFiltered();
+  var coords=getCoords();
+  var allChecked=document.getElementById('selectAllCheck').checked;
+  filtered.forEach(function(e){
+    var idx=coords.indexOf(e);
+    if(allChecked)selectedSet.add(idx);
+    else selectedSet.delete(idx);
+  });
+  // 체크박스 UI 동기화
+  document.querySelectorAll('.entry-check').forEach(function(cb){
+    var idx=parseInt(cb.dataset.idx);
+    cb.checked=selectedSet.has(idx);
+    cb.closest('.entry').classList.toggle('checked',selectedSet.has(idx));
+  });
+  updateSelectBar();
+}
+
+function copySelected(){
+  if(!selectedSet.size)return;
+  var coords=getCoords();
+  var w=activeWorld();
+  var dimNames={overworld:'Overworld',nether:'Nether',end:'The End'};
+  var items=[];
+  coords.forEach(function(e,i){
+    if(selectedSet.has(i))items.push(e);
+  });
+  var header='[ '+w.name+' ]\n';
+  var t=header+items.map(function(e){
+    return '['+dimNames[e.dim]+'] X:'+e.x+' Y:'+e.y+' Z:'+e.z+' — '+(e.memo||'')+'  ('+fmt(e.time)+')';
+  }).join('\n');
+  navigator.clipboard.writeText(t).then(function(){showToast(tx('toastCopied'))}).catch(function(){showToast(tx('toastCopyFail'))});
+}
+
+function deleteSelected(){
+  if(!selectedSet.size)return;
+  if(!confirm(tx('delSelConfirm')))return;
+  var coords=getCoords();
+  // 큰 인덱스부터 삭제해야 인덱스가 밀리지 않음
+  var indices=Array.from(selectedSet).sort(function(a,b){return b-a});
+  indices.forEach(function(i){coords.splice(i,1)});
+  selectedSet.clear();
+  saveData();render();updateSelectBar();
+  showToast(tx('toastCleared'));
+}
+
+/* ========== 렌더링 ========== */
+function render(){
+  var list=document.getElementById('list');
+  var filtered=getFiltered();
+  var coords=getCoords();
+  document.getElementById('count').textContent=filtered.length;
+  // 선택 상태에서 없어진 인덱스 정리
+  selectedSet.forEach(function(idx){if(idx>=coords.length)selectedSet.delete(idx)});
+  if(!filtered.length){
+    list.innerHTML='<div class="empty">'+tx('empty')+'</div>';
+    updateSelectBar();
+    return;
+  }
+  var dimNames={overworld:tx('overworld'),nether:tx('nether'),end:tx('end')};
+  list.innerHTML=filtered.slice().reverse().map(function(e){
+    var origIdx=coords.indexOf(e);
+    var isChecked=selectedSet.has(origIdx);
+    return '<div class="entry'+(isChecked?' checked':'')+'">'+
+      '<input type="checkbox" class="entry-check" data-idx="'+origIdx+'"'+(isChecked?' checked':'')+' onchange="toggleCheck('+origIdx+')">'+
+      '<button class="btn-del" onclick="delEntry('+origIdx+')" title="'+tx('del')+'">✕</button>'+
+      '<div class="entry-top">'+
+        '<span class="entry-memo">'+esc(e.memo||tx('noMemo'))+'</span>'+
+        '<div class="entry-meta">'+
+          '<span class="entry-dim">'+(dimNames[e.dim]||dimNames.overworld)+'</span>'+
+          '<span class="entry-time">'+fmt(e.time)+'</span>'+
+        '</div>'+
+      '</div>'+
+      '<div class="entry-coords">'+
+        '<span class="ctag cx"><span class="clbl">X</span>'+esc(String(e.x))+'</span>'+
+        '<span class="ctag cy"><span class="clbl">Y</span>'+esc(String(e.y))+'</span>'+
+        '<span class="ctag cz"><span class="clbl">Z</span>'+esc(String(e.z))+'</span>'+
+      '</div></div>';
+  }).join('');
+  updateSelectBar();
+}
+
+/* ========== CRUD ========== */
+function saveEntry(){
+  var x=document.getElementById('ix').value;
+  var y=document.getElementById('iy').value;
+  var z=document.getElementById('iz').value;
+  if(!x&&!y&&!z){showToast(tx('toastEmpty'));return}
+  getCoords().push({
+    x:x||'0',y:y||'0',z:z||'0',
+    dim:curDim,
+    memo:document.getElementById('imemo').value,
+    time:new Date().toISOString()
+  });
+  document.getElementById('ix').value='';
+  document.getElementById('iy').value='';
+  document.getElementById('iz').value='';
+  document.getElementById('imemo').value='';
+  document.getElementById('ix').focus();
+  saveData();render();showToast(tx('toastSaved'));
+}
+
+function delEntry(i){getCoords().splice(i,1);saveData();render()}
+
+function clearAll(){
+  var coords=getCoords();
+  if(!coords.length)return;
+  if(confirm(tx('toastClearConfirm'))){
+    activeWorld().coords=[];saveData();render();showToast(tx('toastCleared'));
+  }
+}
+
+function exportJSON(){
+  if(!data.worlds.some(function(w){return w.coords.length})){showToast(tx('toastNoData'));return}
+  var blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='mc-coordinates.json';
+  a.click();
+  showToast(tx('toastExported'));
+}
+
+function importJSON(event){
+  var file=event.target.files[0];
+  if(!file)return;
+  var reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      var parsed=JSON.parse(e.target.result);
+      // 새 형식 (worlds 배열)
+      if(parsed.worlds&&Array.isArray(parsed.worlds)){
+        parsed.worlds.forEach(function(w){
+          if(!w.coords||!Array.isArray(w.coords))return;
+          var existing=data.worlds.find(function(ew){return ew.name===w.name});
+          if(existing){
+            w.coords.forEach(function(c){existing.coords.push(c)});
+          }else{
+            w.id=genId();
+            data.worlds.push(w);
+          }
+        });
+      }
+      // 구 형식 (좌표 배열)
+      else if(Array.isArray(parsed)){
+        parsed.forEach(function(item){
+          if(item.x!==undefined&&item.y!==undefined&&item.z!==undefined){
+            if(!item.dim)item.dim='overworld';
+            if(!item.time)item.time=new Date().toISOString();
+            getCoords().push(item);
+          }
+        });
+      }
+      else{throw new Error()}
+      saveData();renderWorldSelect();render();showToast(tx('toastImported'));
+    }catch(err){
+      showToast(tx('toastImportFail'));
+    }
+  };
+  reader.readAsText(file);
+  event.target.value='';
+}
+
+document.addEventListener('keydown',function(e){
+  if(e.key==='Enter'&&e.target.tagName==='INPUT'&&e.target.id!=='worldSelect')saveEntry();
+});
+
+// 초기화
+renderWorldSelect();
+applyLang(getSavedLang());
+document.getElementById('ix').focus();
+</script>
+</body>
+</html>
