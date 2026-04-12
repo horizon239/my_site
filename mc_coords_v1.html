@@ -193,6 +193,14 @@ body::after{
   font-family:'JetBrains Mono',monospace;font-size:10px;color:#555
 }
 
+.data-notice{
+  display:flex;align-items:flex-start;gap:8px;
+  margin-top:12px;padding:10px 14px;
+  background:rgba(200,169,110,0.06);border:1px solid rgba(200,169,110,0.12);
+  border-radius:4px;font-size:11px;color:#777;line-height:1.6
+}
+.data-notice-icon{flex-shrink:0;font-size:14px;margin-top:1px}
+
 /* 목록 */
 .list-header{display:flex;justify-content:space-between;align-items:center;margin:28px 0 12px}
 .list-header span{font-size:12px;color:#555;letter-spacing:0.15em;text-transform:uppercase}
@@ -383,6 +391,10 @@ body::after{
   </div>
 
   <div class="shortcut-hint"><kbd>Enter</kbd> <span id="txtShortcut">키로 빠르게 저장</span></div>
+  <div class="data-notice">
+    <span class="data-notice-icon">⚠</span>
+    <span id="txtNotice">데이터는 브라우저에 저장됩니다. 캐시 삭제 시 초기화되므로 중요한 좌표는 내보내기로 백업하세요.</span>
+  </div>
 
   <div class="list-header">
     <span id="txtListLabel">기록 목록</span>
@@ -634,6 +646,18 @@ var I18N={
     es:"Borrar",fr:"Supprimer",de:"Löschen",pt:"Apagar",
     hi:"हटाएं",ar:"حذف"
   },
+  notice:{
+    ko:"데이터는 브라우저에 저장됩니다. 캐시 삭제 시 초기화되므로 중요한 좌표는 내보내기로 백업하세요.",
+    en:"Data is stored in your browser. Clearing cache will reset it — back up important coordinates using Export.",
+    ja:"データはブラウザに保存されます。キャッシュ削除で初期化されるため、大切な座標はエクスポートでバックアップしてください。",
+    zh:"数据保存在浏览器中。清除缓存会重置数据，请通过导出备份重要坐标。",
+    es:"Los datos se guardan en el navegador. Limpiar caché los borrará — exporta las coordenadas importantes.",
+    fr:"Les données sont stockées dans le navigateur. Vider le cache les supprimera — exportez les coordonnées importantes.",
+    de:"Daten werden im Browser gespeichert. Cache-Löschung setzt sie zurück — wichtige Koordinaten per Export sichern.",
+    pt:"Os dados são salvos no navegador. Limpar cache os apagará — exporte coordenadas importantes como backup.",
+    hi:"डेटा ब्राउज़र में सहेजा जाता है। कैश साफ़ करने पर रीसेट होगा — महत्वपूर्ण निर्देशांक निर्यात से बैकअप करें।",
+    ar:"البيانات محفوظة في المتصفح. مسح ذاكرة التخزين سيحذفها — قم بتصدير الإحداثيات المهمة كنسخة احتياطية."
+  },
   delSelConfirm:{
     ko:"선택한 기록을 삭제할까요?",en:"Delete selected records?",ja:"選択した記録を削除しますか？",zh:"删除所选记录？",
     es:"¿Borrar registros seleccionados?",fr:"Supprimer les enregistrements sélectionnés ?",
@@ -765,6 +789,7 @@ function applyLang(code){
   document.getElementById('lblSelected').textContent=tx('selected');
   document.getElementById('btnSelCopy').textContent=tx('copySelected');
   document.getElementById('btnSelDel').textContent=tx('deleteSelected');
+  document.getElementById('txtNotice').textContent=tx('notice');
 
   document.querySelectorAll('.dim-label').forEach(function(el){el.textContent=tx(el.dataset.key)});
   document.querySelectorAll('.filter-label').forEach(function(el){el.textContent=tx(el.dataset.key)});
