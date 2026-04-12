@@ -11,7 +11,7 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{--bg:#0a0a0a;--surface:#111113;--border:rgba(255,255,255,0.07);--text:#e8e4dc;--muted:#555;--accent:#c8a96e;--accent-dim:rgba(200,169,110,0.15)}
-html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-serif;font-weight:300;overflow-x:hidden}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-serif;font-weight:300;overflow-x:hidden;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 
 .app{position:relative;z-index:1;max-width:900px;margin:0 auto;padding:24px 20px 40px;min-height:100vh;display:flex;flex-direction:column;align-items:center}
 .home-btn{display:inline-flex;align-items:center;gap:6px;align-self:flex-start;font-size:12px;letter-spacing:0.15em;color:#555;text-decoration:none;margin-bottom:20px;transition:color 0.2s}
@@ -31,10 +31,20 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Noto S
 .lang-option.active{color:var(--accent)}
 .lang-check{margin-left:auto;font-size:10px;color:var(--accent)}
 
-.count-row{display:flex;gap:8px;margin-bottom:16px}
-.count-btn{width:48px;height:48px;border:1px solid var(--border);border-radius:6px;background:transparent;color:#555;font-size:18px;font-weight:500;cursor:pointer;font-family:'Bebas Neue',sans-serif;transition:all 0.2s;display:flex;align-items:center;justify-content:center}
-.count-btn.active{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
-.count-btn:hover:not(.active){border-color:rgba(255,255,255,0.15);color:#888}
+.count-row{display:flex;align-items:center;gap:16px;margin-bottom:16px}
+.count-adj{
+  width:36px;height:36px;border:1px solid var(--border);border-radius:50%;
+  background:transparent;color:#888;font-size:20px;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  font-family:'Noto Sans KR',sans-serif;transition:all 0.2s;line-height:1
+}
+.count-adj:hover{border-color:var(--accent);color:var(--accent)}
+.count-adj:active{background:var(--accent-dim);transform:scale(0.92)}
+.count-adj:disabled{opacity:0.2;cursor:default;transform:none}
+.count-display{
+  font-family:'Bebas Neue',sans-serif;font-size:32px;color:var(--accent);
+  min-width:40px;text-align:center;letter-spacing:0.05em;line-height:1
+}
 
 #canvas-wrap{width:100%;max-width:100%;aspect-ratio:4/3;border-radius:8px;margin-bottom:12px;position:relative;touch-action:none}
 #canvas-wrap canvas{display:block;width:100%;height:100%;cursor:grab}
@@ -84,11 +94,9 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Noto S
   <p class="header-sub" id="txtSub">주사위를 잡고 흔든 뒤 던져보세요!</p>
 
   <div class="count-row">
-    <button class="count-btn active" onclick="setCount(1,this)">1</button>
-    <button class="count-btn" onclick="setCount(2,this)">2</button>
-    <button class="count-btn" onclick="setCount(3,this)">3</button>
-    <button class="count-btn" onclick="setCount(4,this)">4</button>
-    <button class="count-btn" onclick="setCount(5,this)">5</button>
+    <button class="count-adj" id="btnMinus" onclick="adjCount(-1)">−</button>
+    <span class="count-display" id="countDisplay">1</span>
+    <button class="count-adj" id="btnPlus" onclick="adjCount(1)">+</button>
   </div>
 
   <div id="canvas-wrap"></div>
@@ -435,20 +443,20 @@ function spawnDice(){
   clearDice();
   var offsets=[
     [[0,0]],
-    [[-1,0],[1,0]],
-    [[-1.5,0.3],[0,-0.3],[1.5,0.3]],
-    [[-1.5,-0.7],[1.5,-0.7],[-1.5,0.7],[1.5,0.7]],
-    [[-2,-0.7],[0,-0.7],[2,-0.7],[-1,0.7],[1,0.7]]
+    [[-1.4,0],[1.4,0]],
+    [[-2.2,0.4],[0,-0.4],[2.2,0.4]],
+    [[-2,-1],[2,-1],[-2,1],[2,1]],
+    [[-2.5,-1],[0,-1],[2.5,-1],[-1.2,1],[1.2,1]]
   ];
   var pos=offsets[diceCount-1];
   for(var i=0;i<diceCount;i++){
     var px=Array.isArray(pos[i])?pos[i][0]:pos[i];
     var pz=Array.isArray(pos[i])?pos[i][1]:0;
-    var mesh=new THREE.Mesh(new THREE.BoxGeometry(1,1,1),getDiceMats());
+    var mesh=new THREE.Mesh(new THREE.BoxGeometry(1.6,1.6,1.6),getDiceMats());
     mesh.castShadow=true;mesh.receiveShadow=true;
     scene.add(mesh);diceMeshes.push(mesh);
 
-    var body=new CANNON.Body({mass:1,shape:new CANNON.Box(new CANNON.Vec3(0.5,0.5,0.5))});
+    var body=new CANNON.Body({mass:1,shape:new CANNON.Box(new CANNON.Vec3(0.8,0.8,0.8))});
     body.position.set(px,0.5,pz);
     body.linearDamping=0.3;body.angularDamping=0.4;
     // 충돌 사운드
@@ -460,15 +468,17 @@ function spawnDice(){
   }
 }
 
-function setCount(n,btn){
+function setCount(n){
   if(isRolling||isDragging)return;
-  diceCount=n;
-  document.querySelectorAll('.count-btn').forEach(function(b){b.classList.remove('active')});
-  btn.classList.add('active');
+  diceCount=Math.max(1,Math.min(5,n));
+  document.getElementById('countDisplay').textContent=diceCount;
+  document.getElementById('btnMinus').disabled=diceCount<=1;
+  document.getElementById('btnPlus').disabled=diceCount>=5;
   document.getElementById('resultNum').classList.remove('show');
   document.getElementById('resultTotal').classList.remove('show');
   spawnDice();
 }
+function adjCount(d){setCount(diceCount+d)}
 
 /* ===== 드래그 & 던지기 ===== */
 var raycaster=new THREE.Raycaster();
@@ -551,10 +561,10 @@ function onPointerMove(e){
     var cx=intersection.x,cz=intersection.z;
     var offsets=[
       [[0,0]],
-      [[-0.6,0],[0.6,0]],
-      [[-0.8,0.3],[0,-0.3],[0.8,0.3]],
-      [[-0.8,-0.5],[0.8,-0.5],[-0.8,0.5],[0.8,0.5]],
-      [[-1,-0.5],[0,-0.5],[1,-0.5],[-0.5,0.5],[0.5,0.5]]
+      [[-1,0],[1,0]],
+      [[-1.2,0.4],[0,-0.4],[1.2,0.4]],
+      [[-1.2,-0.7],[1.2,-0.7],[-1.2,0.7],[1.2,0.7]],
+      [[-1.5,-0.7],[0,-0.7],[1.5,-0.7],[-0.8,0.7],[0.8,0.7]]
     ];
     var ofs=offsets[diceCount-1];
 
@@ -754,6 +764,7 @@ document.addEventListener('keydown',function(e){
 });
 
 spawnDice();
+document.getElementById('btnMinus').disabled=true;
 applyLang(getSavedLang());
 </script>
 </body>
