@@ -1,0 +1,7 @@
+src/
+node_modules/
+build.js
+build.bat
+package.json
+package-lock.json
+CLAUDE.md
