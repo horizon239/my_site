@@ -1,0 +1,16 @@
+name: Supabase Keepalive
+
+on:
+  schedule:
+    - cron: '17 3 */3 * *'  # UTC 03:17, 3일마다 실행 (7일 휴면 전환 방지)
+  workflow_dispatch: {}
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase REST API
+        run: |
+          curl -sf -o /dev/null \
+            "https://pxvzogbmjyotttrucaxz.supabase.co/rest/v1/feedback_posts?select=id&limit=1" \
+            -H "apikey: sb_publishable_T14w4z9ElufgUTfg2XOw7A_NyU5a1yN"
