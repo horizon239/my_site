@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>테스트용 페이지</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0a0a0a;
+    --surface: #111113;
+    --border: rgba(255,255,255,0.07);
+    --text: #e8e4dc;
+    --muted: #666;
+    --accent: #c8a96e;
+  }
+
+  html, body {
+    height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Noto Sans KR', sans-serif;
+    font-weight: 300;
+  }
+
+  .wrap {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 80px 24px;
+  }
+
+  .back {
+    align-self: flex-start;
+    margin-bottom: 40px;
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 13px;
+    letter-spacing: 0.05em;
+  }
+  .back:hover { color: var(--text); }
+
+  h1 {
+    font-size: 22px;
+    letter-spacing: 0.08em;
+    margin-bottom: 8px;
+  }
+
+  .desc {
+    color: var(--muted);
+    font-size: 13px;
+    margin-bottom: 40px;
+    text-align: center;
+    line-height: 1.6;
+  }
+
+  .versions {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    width: 100%;
+    max-width: 360px;
+  }
+
+  .version-btn {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 22px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    text-decoration: none;
+    color: var(--text);
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .version-btn:hover {
+    border-color: rgba(200,169,110,0.35);
+    background: #16161a;
+  }
+
+  .version-btn .v-name {
+    font-size: 15px;
+    letter-spacing: 0.03em;
+  }
+  .version-btn .v-arrow {
+    color: var(--accent);
+    font-size: 13px;
+  }
+
+  .version-btn.disabled {
+    opacity: 0.4;
+    pointer-events: none;
+  }
+  .version-btn.disabled .v-arrow {
+    color: var(--muted);
+    font-size: 12px;
+  }
+</style>
+
+<!-- Built by Just Play | Unauthorized copying prohibited -->
+</head>
+<body>
+  <div class="wrap">
+    <a class="back" href="index.html">← 메인으로</a>
+    <h1>테스트용 페이지</h1>
+    <p class="desc">모바일에서 상세페이지가 어떻게 보이는지<br>확인하기 위한 버전별 테스트 페이지입니다.</p>
+    <div class="versions">
+      <a class="version-btn" href="mockup_test_v1.html">
+        <span class="v-name">Version 1</span>
+        <span class="v-arrow">보기 →</span>
+      </a>
+      <div class="version-btn disabled">
+        <span class="v-name">Version 2</span>
+        <span class="v-arrow">준비중</span>
+      </div>
+      <div class="version-btn disabled">
+        <span class="v-name">Version 3</span>
+        <span class="v-arrow">준비중</span>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
